@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#070e1c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ISD Funding">
+<title>ISD Germany — Funding Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Barlow+Condensed:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundled.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #070e1c;
+  --surface: #0c1a30;
+  --card: #101f38;
+  --card-hover: #152545;
+  --border: #1c2f4d;
+  --border-light: #243858;
+  --text: #d8e8f8;
+  --muted: #5e7a9e;
+  --faint: #2a3f5f;
+  --accent: #e8a020;
+  --accent-glow: rgba(232,160,32,0.15);
+  --accent-dim: #7a5010;
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.1);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.1);
+  --orange: #f97316;
+  --orange-dim: rgba(249,115,22,0.1);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96,165,250,0.1);
+  --purple: #c084fc;
+  --purple-dim: rgba(192,132,252,0.1);
+  --radius: 6px;
+  --radius-lg: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; font-size: 14px; overflow: hidden; }
+
+/* ── LAYOUT ── */
+#app { display: flex; flex-direction: column; height: 100vh; }
+#header { display: flex; align-items: center; gap: 16px; padding: 0 20px; height: 52px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+#header-logo { display: flex; align-items: center; gap: 10px; }
+#header-logo .logo-mark { width: 26px; height: 26px; background: var(--accent); clip-path: polygon(50% 0%,100% 38%,82%,100%,18% 100%,0% 38%); display: flex; align-items: center; justify-content: center; }
+#header-logo .logo-mark svg { width:14px; height:14px; }
+#header-logo h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: 0.04em; color: var(--text); text-transform: uppercase; }
+#header-logo span { font-size: 11px; color: var(--muted); font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; margin-left: 2px; }
+#header-tabs { display: flex; gap: 2px; margin-left: 24px; }
+.htab { padding: 6px 14px; border-radius: var(--radius); font-size: 12.5px; font-weight: 500; letter-spacing: 0.03em; cursor: pointer; color: var(--muted); border: none; background: transparent; transition: all 0.15s; text-transform: uppercase; }
+.htab:hover { color: var(--text); background: var(--card); }
+.htab.active { color: var(--accent); background: var(--accent-glow); }
+#header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.hbtn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius); font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.05em; }
+.hbtn-scan { background: var(--accent); color: #0a0e18; }
+.hbtn-scan:hover { background: #f0b030; }
+.hbtn-scan.loading { background: var(--accent-dim); color: var(--accent); cursor: not-allowed; }
+.hbtn-report { background: var(--card); color: var(--text); border: 1px solid var(--border-light); }
+.hbtn-report:hover { background: var(--card-hover); }
+#sync-info { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+#body { display: flex; flex: 1; overflow: hidden; }
+#main { flex: 1; overflow-y: auto; padding: 20px; }
+#main::-webkit-scrollbar { width: 6px; }
+#main::-webkit-scrollbar-track { background: transparent; }
+#main::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+/* Detail panel */
+#detail-panel { width: 0; transition: width 0.25s ease; overflow: hidden; background: var(--surface); border-left: 1px solid var(--border); }
+#detail-panel.open { width: 380px; }
+#detail-inner { width: 380px; height: 100%; overflow-y: auto; padding: 20px; }
+#detail-inner::-webkit-scrollbar { width: 4px; }
+#detail-inner::-webkit-scrollbar-thumb { background: var(--border-light); }
+
+/* ── TABS ── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── OVERVIEW ── */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; position: relative; overflow: hidden; }
+.kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: var(--accent); opacity: 0.7; }
+.kpi.green::before { background: var(--green); }
+.kpi.red::before { background: var(--red); }
+.kpi.blue::before { background: var(--blue); }
+.kpi-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.kpi-value { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; font-weight: 700; color: var(--text); line-height: 1; }
+.kpi-sub { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.see-all { font-size: 11px; color: var(--accent); cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; border: none; background: none; }
+.see-all:hover { text-decoration: underline; }
+
+.alert-banner { background: var(--red-dim); border: 1px solid rgba(239,68,68,0.25); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 10px; }
+.alert-banner .alert-icon { color: var(--red); font-size: 16px; margin-top: 1px; }
+.alert-banner .alert-text { font-size: 12.5px; color: var(--text); }
+.alert-banner .alert-text strong { color: var(--red); }
+
+.two-col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+.panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; }
+.panel-title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+/* ── TABLES ── */
+.table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.tbl-toolbar { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 180px; background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 7px 10px; color: var(--text); font-size: 13px; font-family: 'Barlow', sans-serif; outline: none; }
+.search-box::placeholder { color: var(--muted); }
+.search-box:focus { border-color: var(--accent); }
+select.filt { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 7px 10px; color: var(--text); font-size: 12px; font-family: 'Barlow', sans-serif; outline: none; cursor: pointer; }
+select.filt:focus { border-color: var(--accent); }
+.tbtn { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: var(--radius); font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border-light); background: var(--surface); color: var(--text); text-transform: uppercase; letter-spacing: 0.04em; transition: all 0.15s; }
+.tbtn:hover { background: var(--card-hover); border-color: var(--accent); color: var(--accent); }
+.tbtn-primary { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+.tbtn-primary:hover { background: var(--accent); color: #0a0e18; }
+
+table { width: 100%; border-collapse: collapse; }
+thead th { font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); cursor: pointer; white-space: nowrap; user-select: none; }
+thead th:hover { color: var(--text); }
+thead th .sort-ind { margin-left: 3px; opacity: 0.4; }
+thead th.sorted .sort-ind { opacity: 1; color: var(--accent); }
+tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--card-hover); }
+tbody tr.selected { background: var(--accent-glow); }
+td { padding: 10px 14px; font-size: 13px; color: var(--text); }
+td.mono { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; }
+td.muted { color: var(--muted); }
+.tbl-empty { padding: 40px; text-align: center; color: var(--muted); font-size: 13px; }
+
+/* ── BADGES ── */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+.badge-high { background: var(--green-dim); color: var(--green); }
+.badge-medium { background: var(--orange-dim); color: var(--orange); }
+.badge-low { background: var(--faint); color: var(--muted); }
+.badge-idea { background: var(--faint); color: var(--muted); }
+.badge-scoping { background: var(--blue-dim); color: var(--blue); }
+.badge-drafting { background: var(--purple-dim); color: var(--purple); }
+.badge-submitted { background: var(--orange-dim); color: var(--orange); }
+.badge-approved { background: var(--green-dim); color: var(--green); }
+.badge-rejected { background: var(--red-dim); color: var(--red); }
+.badge-new { background: var(--blue-dim); color: var(--blue); }
+.badge-assessing { background: var(--faint); color: var(--muted); }
+.badge-go { background: var(--green-dim); color: var(--green); }
+.badge-no-go { background: var(--red-dim); color: var(--red); }
+.badge-warm { background: var(--orange-dim); color: var(--orange); }
+.badge-cold { background: var(--faint); color: var(--muted); }
+.badge-active { background: var(--green-dim); color: var(--green); }
+.badge-strategic { background: var(--accent-glow); color: var(--accent); }
+.fit-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.fit-dot-high { background: var(--green); }
+.fit-dot-medium { background: var(--orange); }
+.fit-dot-low { background: var(--muted); }
+
+/* ── PIPELINE KANBAN ── */
+.kanban { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+.kanban::-webkit-scrollbar { height: 4px; }
+.kanban::-webkit-scrollbar-thumb { background: var(--border-light); }
+.k-col { flex: 0 0 220px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.k-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.k-stage-name { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+.k-count { font-size: 11px; background: var(--faint); color: var(--muted); padding: 2px 7px; border-radius: 20px; font-weight: 600; }
+.k-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 80px; }
+.k-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; cursor: pointer; transition: all 0.15s; }
+.k-card:hover { border-color: var(--accent); background: var(--card); transform: translateY(-1px); }
+.k-card-name { font-size: 12.5px; font-weight: 500; margin-bottom: 4px; }
+.k-card-funder { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.k-card-meta { display: flex; align-items: center; justify-content: space-between; }
+.k-card-budget { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--accent); }
+.k-card-deadline { font-size: 10.5px; color: var(--muted); }
+.k-card-deadline.urgent { color: var(--red); }
+
+/* ── CALENDAR ── */
+.calendar-wrap { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.cal-header { display: grid; grid-template-columns: 80px repeat(28, 1fr); border-bottom: 1px solid var(--border); }
+.cal-label { padding: 8px 10px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; }
+.cal-day { padding: 6px 2px; text-align: center; font-size: 10px; color: var(--muted); border-left: 1px solid var(--border); }
+.cal-day.today { color: var(--accent); font-weight: 700; background: var(--accent-glow); }
+.cal-day.weekend { color: var(--faint); }
+.cal-row { display: grid; grid-template-columns: 80px repeat(28, 1fr); border-bottom: 1px solid var(--border); min-height: 36px; }
+.cal-row:last-child { border-bottom: none; }
+.cal-row-label { padding: 8px 10px; font-size: 10.5px; color: var(--muted); font-weight: 600; display: flex; align-items: center; border-right: 1px solid var(--border); }
+.cal-cell { border-left: 1px solid rgba(28,47,77,0.4); position: relative; }
+.cal-cell.today { background: rgba(232,160,32,0.04); }
+.cal-event { position: absolute; inset: 3px 2px; border-radius: 3px; font-size: 10px; padding: 2px 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; transition: opacity 0.15s; font-weight: 500; }
+.cal-event:hover { opacity: 0.8; }
+.cal-event.submission { background: rgba(239,68,68,0.8); color: #fff; }
+.cal-event.report { background: rgba(249,115,22,0.8); color: #fff; }
+.cal-event.milestone { background: rgba(96,165,250,0.8); color: #fff; }
+.cal-event.meeting { background: rgba(34,197,94,0.8); color: #fff; }
+
+/* ── DETAIL PANEL ── */
+.dp-close { position: absolute; top: 14px; right: 14px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 18px; padding: 2px; }
+.dp-close:hover { color: var(--text); }
+.dp-type { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.dp-name { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; line-height: 1.2; margin-bottom: 12px; color: var(--text); }
+.dp-funder { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.dp-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.dp-section { margin-bottom: 18px; }
+.dp-section-title { font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.dp-field { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; font-size: 12.5px; color: var(--text); line-height: 1.5; }
+.dp-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dp-meta-item { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; }
+.dp-meta-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.dp-meta-value { font-size: 13px; color: var(--text); font-weight: 500; }
+.dp-meta-value.accent { color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+.dp-notes-area { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; color: var(--text); font-size: 12.5px; font-family: 'Barlow', sans-serif; line-height: 1.6; resize: vertical; min-height: 100px; outline: none; }
+.dp-notes-area:focus { border-color: var(--accent); }
+.dp-actions { display: flex; gap: 8px; margin-top: 16px; }
+.dp-btn { flex: 1; padding: 8px; border-radius: var(--radius); font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border-light); background: var(--surface); color: var(--text); text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.15s; }
+.dp-btn:hover { background: var(--card-hover); }
+.dp-btn.primary { background: var(--accent); border-color: var(--accent); color: #0a0e18; }
+.dp-btn.primary:hover { background: #f0b030; }
+.dp-btn.danger { background: var(--red-dim); border-color: rgba(239,68,68,0.3); color: var(--red); }
+.dp-btn.danger:hover { background: rgba(239,68,68,0.2); }
+
+/* ── FUNDERS GRID ── */
+.funders-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.funder-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; cursor: pointer; transition: all 0.15s; }
+.funder-card:hover { border-color: var(--accent); background: var(--card-hover); transform: translateY(-1px); }
+.funder-card.selected { border-color: var(--accent); background: var(--accent-glow); }
+.funder-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+.funder-name { font-weight: 600; font-size: 14px; }
+.funder-type-tag { font-size: 10px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); background: var(--faint); padding: 2px 7px; border-radius: 20px; }
+.funder-contact { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.funder-projects { font-size: 12px; color: var(--text); margin-bottom: 10px; line-height: 1.4; }
+.funder-footer { display: flex; align-items: center; justify-content: space-between; }
+.funder-last { font-size: 11px; color: var(--muted); }
+
+/* ── MODALS ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(7,14,28,0.85); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(2px); }
+.modal-overlay.hidden { display: none; }
+.modal { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-lg); width: 560px; max-width: 95vw; max-height: 85vh; overflow-y: auto; padding: 24px; position: relative; }
+.modal::-webkit-scrollbar { width: 4px; }
+.modal::-webkit-scrollbar-thumb { background: var(--border-light); }
+.modal-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 20px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-grid.full { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.form-group input, .form-group select, .form-group textarea { background: var(--card); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 8px 10px; color: var(--text); font-size: 13px; font-family: 'Barlow', sans-serif; outline: none; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+.form-group textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+.form-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+.form-btn { padding: 9px 20px; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border-light); background: var(--card); color: var(--text); text-transform: uppercase; letter-spacing: 0.04em; transition: all 0.15s; }
+.form-btn.primary { background: var(--accent); border-color: var(--accent); color: #0a0e18; }
+.form-btn:hover { background: var(--card-hover); }
+.form-btn.primary:hover { background: #f0b030; }
+.form-span-2 { grid-column: span 2; }
+
+/* ── REPORT MODAL ── */
+.report-slide { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+.report-slide-num { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.report-slide-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.report-slide-body { font-size: 13px; color: var(--muted); line-height: 1.7; white-space: pre-line; }
+.ai-thinking { display: flex; align-items: center; gap: 10px; padding: 20px; color: var(--muted); font-size: 13px; }
+.spinner { width: 18px; height: 18px; border: 2px solid var(--border-light); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── MINI ITEMS ── */
+.mini-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+.mini-item:last-child { border-bottom: none; }
+.mini-item:hover { opacity: 0.8; }
+.mini-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.mini-name { flex: 1; font-size: 13px; font-weight: 500; }
+.mini-right { text-align: right; }
+.mini-date { font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+.mini-date.urgent { color: var(--red); }
+.mini-meta { font-size: 11px; color: var(--muted); }
+
+/* ── STAGE BAR ── */
+.stage-bar { display: flex; gap: 0; margin-bottom: 20px; }
+.stage-seg { flex: 1; padding: 8px 6px; text-align: center; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; background: var(--card); border: 1px solid var(--border); border-right: none; position: relative; }
+.stage-seg:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.stage-seg:last-child { border-radius: 0 var(--radius) var(--radius) 0; border-right: 1px solid var(--border); }
+.stage-seg.filled { background: var(--accent-glow); border-color: var(--accent-dim); color: var(--accent); }
+.stage-count { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; display: block; }
+
+/* ── MISC ── */
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: var(--muted); gap: 10px; }
+.empty-state .big-icon { font-size: 36px; opacity: 0.3; }
+.empty-state p { font-size: 13px; }
+.ai-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--accent-glow); border: 1px solid var(--accent-dim); color: var(--accent); padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+.new-dot { display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:0.5; transform:scale(0.7); } }
+.progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.5s ease; }
+.total-val { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--accent); }
+/* ── CHARTS ── */
+.charts-section { margin-top: 20px; }
+.charts-section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+.charts-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 12px; }
+.charts-grid-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 12px; margin-bottom: 12px; }
+.chart-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px; position: relative; }
+.chart-card-title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+.chart-canvas-wrap { position: relative; }
+.chart-canvas-wrap canvas { display: block; }
+.chart-legend { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.chart-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+.chart-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.chart-center-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
+.chart-center-val { font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 700; color: var(--text); line-height: 1; }
+.chart-center-sub { font-size: 10px; color: var(--muted); letter-spacing: 0.07em; text-transform: uppercase; }
+/* ── CLIPBOARD WORKFLOW MODALS ── */
+.cw-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.cw-step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #0a0e18; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.cw-step-body { flex: 1; }
+.cw-step-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.cw-step-hint { font-size: 11.5px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
+.cw-prompt-box { background: var(--bg); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 10px 12px; font-size: 11.5px; font-family: 'JetBrains Mono', monospace; color: var(--muted); line-height: 1.6; max-height: 120px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; }
+.cw-copy-btn { margin-top: 7px; display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: var(--radius); font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--accent); background: var(--accent-glow); color: var(--accent); transition: all 0.15s; }
+.cw-copy-btn:hover { background: var(--accent); color: #0a0e18; }
+.cw-copy-btn.copied { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+.cw-paste-area { width: 100%; background: var(--bg); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 10px 12px; color: var(--text); font-size: 12px; font-family: 'JetBrains Mono', monospace; line-height: 1.5; resize: vertical; min-height: 90px; outline: none; }
+.cw-paste-area:focus { border-color: var(--accent); }
+.cw-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.cw-link { display: inline-flex; align-items: center; gap: 5px; padding: 7px 16px; border-radius: var(--radius); font-size: 12.5px; font-weight: 600; cursor: pointer; background: var(--accent); color: #0a0e18; border: none; text-decoration: none; transition: all 0.15s; }
+.cw-link:hover { background: #f0b030; }
+
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HEADER -->
+  <div id="header">
+    <div id="header-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 14 14" fill="none">
+          <polygon points="7,1 13,5 13,9 7,13 1,9 1,5" fill="#0a0e18" stroke="#0a0e18" stroke-width="0.5"/>
+          <circle cx="7" cy="7" r="2.5" fill="#e8a020"/>
+        </svg>
+      </div>
+      <div>
+        <h1>ISD Germany <span style="opacity:0.4">|</span> <span>Funding Intelligence</span></h1>
+      </div>
+    </div>
+    <div id="header-tabs">
+      <button class="htab active" onclick="switchTab('overview')">Overview</button>
+      <button class="htab" onclick="switchTab('opportunities')">Opportunities <span id="opp-count-badge" style="font-size:10px;background:var(--accent-glow);color:var(--accent);padding:1px 6px;border-radius:20px;margin-left:3px;"></span></button>
+      <button class="htab" onclick="switchTab('pipeline')">Pipeline</button>
+      <button class="htab" onclick="switchTab('calendar')">Calendar</button>
+      <button class="htab" onclick="switchTab('funders')">Funders</button>
+    </div>
+    <div id="header-right">
+      <span id="sync-info">–</span>
+      <button class="hbtn hbtn-report" onclick="openReportModal()">📊 Weekly Report</button>
+      <button class="hbtn hbtn-scan" id="scan-btn" onclick="runAIScan()">⚡ AI Scan</button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div id="body">
+    <div id="main">
+
+      <!-- OVERVIEW TAB -->
+      <div id="tab-overview" class="tab-content active">
+        <div id="alert-area" style="margin-bottom:16px;"></div>
+        <div class="kpi-row" id="kpi-row"></div>
+        <div class="two-col">
+          <div>
+            <div class="section-header">
+              <span class="section-title">🔥 High Priority — Pipeline</span>
+              <button class="see-all" onclick="switchTab('pipeline')">View All →</button>
+            </div>
+            <div class="panel" id="overview-pipeline"></div>
+          </div>
+          <div>
+            <div class="section-header">
+              <span class="section-title">📡 Top Opportunities</span>
+              <button class="see-all" onclick="switchTab('opportunities')">View All →</button>
+            </div>
+            <div class="panel" id="overview-opps"></div>
+          </div>
+        </div>
+
+        <!-- ANALYTICS CHARTS -->
+        <div class="charts-section">
+          <div class="charts-section-title">📊 Analytics</div>
+
+          <div class="charts-grid-3">
+            <div class="chart-card">
+              <div class="chart-card-title">Pipeline by Stage</div>
+              <div class="chart-canvas-wrap" style="height:160px;position:relative;">
+                <canvas id="chart-pip-stage"></canvas>
+                <div class="chart-center-label" id="chart-pip-center" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+                  <div class="chart-center-val" id="chart-pip-total">–</div>
+                  <div class="chart-center-sub">proposals</div>
+                </div>
+              </div>
+              <div class="chart-legend" id="chart-pip-legend"></div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-card-title">Opportunities by Funder Type</div>
+              <div class="chart-canvas-wrap" style="height:160px;position:relative;">
+                <canvas id="chart-opp-type"></canvas>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+                  <div class="chart-center-val" id="chart-opp-total">–</div>
+                  <div class="chart-center-sub">tracked</div>
+                </div>
+              </div>
+              <div class="chart-legend" id="chart-opp-legend"></div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-card-title">Opportunity Status Breakdown</div>
+              <div class="chart-canvas-wrap" style="height:160px;position:relative;">
+                <canvas id="chart-opp-status"></canvas>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+                  <div class="chart-center-val" id="chart-status-go">–</div>
+                  <div class="chart-center-sub">go / assessing</div>
+                </div>
+              </div>
+              <div class="chart-legend" id="chart-status-legend"></div>
+            </div>
+          </div>
+
+          <div class="charts-grid-2">
+            <div class="chart-card">
+              <div class="chart-card-title">Deadlines — Next 90 Days</div>
+              <div class="chart-canvas-wrap" style="height:170px;">
+                <canvas id="chart-deadlines"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-card-title">Pipeline Value by Stage (€k)</div>
+              <div class="chart-canvas-wrap" style="height:170px;">
+                <canvas id="chart-pip-value"></canvas>
+              </div>
+            </div>
+          </div>
+        </div><!-- /charts-section -->
+
+      </div>
+
+      <!-- OPPORTUNITIES TAB -->
+      <div id="tab-opportunities" class="tab-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div>
+            <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Funding Opportunity Radar</h2>
+            <p style="color:var(--muted);font-size:12.5px;margin-top:2px;">Searchable database of open and upcoming funding calls relevant to ISD Germany.</p>
+          </div>
+          <button class="tbtn tbtn-primary" onclick="openAddOppModal()">+ Add Opportunity</button>
+        </div>
+        <div class="table-wrap">
+          <div class="tbl-toolbar">
+            <input class="search-box" type="text" placeholder="Search by name, funder, theme…" id="opp-search" oninput="renderOpportunities()">
+            <select class="filt" id="opp-filt-type" onchange="renderOpportunities()">
+              <option value="">All Funder Types</option>
+              <option value="german-ministry">German Ministry/Foundation</option>
+              <option value="eu-institution">EU Institution</option>
+              <option value="multilateral">Multilateral</option>
+              <option value="private">Private/Corporate</option>
+            </select>
+            <select class="filt" id="opp-filt-fit" onchange="renderOpportunities()">
+              <option value="">All Fit Levels</option>
+              <option value="high">High Fit</option>
+              <option value="medium">Medium Fit</option>
+              <option value="low">Low Fit</option>
+            </select>
+            <select class="filt" id="opp-filt-status" onchange="renderOpportunities()">
+              <option value="">All Statuses</option>
+              <option value="new">New</option>
+              <option value="assessing">Assessing</option>
+              <option value="go">Go</option>
+              <option value="no-go">No-Go</option>
+            </select>
+            <button class="tbtn" onclick="exportOppCSV()">↓ CSV</button>
+          </div>
+          <table id="opp-table">
+            <thead>
+              <tr>
+                <th onclick="sortTable('opportunities','fit')">Fit <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('opportunities','name')">Call Name <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('opportunities','funder')">Funder <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('opportunities','funderType')">Type <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('opportunities','deadline')">Deadline <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('opportunities','maxGrant')">Max Grant <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('opportunities','status')">Status <span class="sort-ind">↕</span></th>
+              </tr>
+            </thead>
+            <tbody id="opp-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PIPELINE TAB -->
+      <div id="tab-pipeline" class="tab-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div>
+            <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Proposal Pipeline</h2>
+            <p style="color:var(--muted);font-size:12.5px;margin-top:2px;">Track proposals from first idea to final decision.</p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="tbtn" id="pip-view-toggle" onclick="togglePipelineView()">≡ List View</button>
+            <button class="tbtn" onclick="forceImportPipeline()" title="Replace pipeline with official ISD Germany spreadsheet data">↻ Import from Master List</button>
+            <button class="tbtn tbtn-primary" onclick="openAddPipModal()">+ Add Proposal</button>
+          </div>
+        </div>
+        <div id="pip-stage-summary" class="stage-bar"></div>
+        <div id="pip-kanban" class="kanban"></div>
+        <div id="pip-list" class="table-wrap" style="display:none;">
+          <div class="tbl-toolbar">
+            <input class="search-box" type="text" placeholder="Search proposals…" id="pip-search" oninput="renderPipelineList()">
+            <select class="filt" id="pip-filt-stage" onchange="renderPipelineList()">
+              <option value="">All Stages</option>
+              <option value="idea">Idea</option>
+              <option value="scoping">Scoping</option>
+              <option value="drafting">Drafting</option>
+              <option value="submitted">Submitted</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <button class="tbtn" onclick="exportPipCSV()">↓ CSV</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortTable('pipeline','name')">Project <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('pipeline','funder')">Funder <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('pipeline','stage')">Stage <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('pipeline','deadline')">Deadline <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('pipeline','budget')">Budget <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('pipeline','theme')">Theme <span class="sort-ind">↕</span></th>
+                <th onclick="sortTable('pipeline','role')">Role <span class="sort-ind">↕</span></th>
+              </tr>
+            </thead>
+            <tbody id="pip-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CALENDAR TAB -->
+      <div id="tab-calendar" class="tab-content">
+        <div style="margin-bottom:14px;">
+          <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Deadline & Milestone Calendar</h2>
+          <p style="color:var(--muted);font-size:12.5px;margin-top:2px;">4-week rolling view. Items pulled from pipeline and opportunities.</p>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:14px;font-size:12px;color:var(--muted);">
+          <span>🔴 Submission</span><span>🟠 Report</span><span>🔵 Milestone</span><span>🟢 Meeting</span>
+        </div>
+        <div id="calendar-wrap"></div>
+      </div>
+
+      <!-- FUNDERS TAB -->
+      <div id="tab-funders" class="tab-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div>
+            <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">Funder Relationship Map</h2>
+            <p style="color:var(--muted);font-size:12.5px;margin-top:2px;">CRM overview of key institutional and private funders.</p>
+          </div>
+          <button class="tbtn tbtn-primary" onclick="openAddFunderModal()">+ Add Funder</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <button class="tbtn" style="font-size:11px;" onclick="filterFunders('')" id="ff-all">All</button>
+          <button class="tbtn" style="font-size:11px;" onclick="filterFunders('german-ministry')" id="ff-de">🇩🇪 German</button>
+          <button class="tbtn" style="font-size:11px;" onclick="filterFunders('eu-institution')" id="ff-eu">🇪🇺 EU</button>
+          <button class="tbtn" style="font-size:11px;" onclick="filterFunders('multilateral')" id="ff-multi">🌐 Multilateral</button>
+          <button class="tbtn" style="font-size:11px;" onclick="filterFunders('private')" id="ff-priv">💼 Private</button>
+        </div>
+        <div class="funders-grid" id="funders-grid"></div>
+      </div>
+
+    </div><!-- /main -->
+
+    <!-- DETAIL PANEL -->
+    <div id="detail-panel">
+      <div id="detail-inner" style="position:relative;">
+        <button class="dp-close" onclick="closeDetail()">✕</button>
+        <div id="detail-content"></div>
+      </div>
+    </div>
+  </div><!-- /body -->
+</div><!-- /app -->
+
+<!-- ADD OPPORTUNITY MODAL -->
+<div class="modal-overlay hidden" id="modal-opp">
+  <div class="modal">
+    <div class="modal-title" id="modal-opp-title">Add Funding Opportunity</div>
+    <div class="form-grid">
+      <div class="form-group form-span-2"><label>Call Name *</label><input type="text" id="f-opp-name" placeholder="e.g. CERV-2025-CITIZENS-CIV"></div>
+      <div class="form-group"><label>Funder *</label><input type="text" id="f-opp-funder" placeholder="e.g. European Commission"></div>
+      <div class="form-group"><label>Funder Type</label>
+        <select id="f-opp-funder-type">
+          <option value="german-ministry">German Ministry/Foundation</option>
+          <option value="eu-institution">EU Institution</option>
+          <option value="multilateral">Multilateral</option>
+          <option value="private">Private/Corporate</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Instrument</label><input type="text" id="f-opp-instrument" placeholder="e.g. CERV, ISF, Bundesprogramm"></div>
+      <div class="form-group"><label>Theme</label><input type="text" id="f-opp-theme" placeholder="e.g. Democratic resilience, FIMI"></div>
+      <div class="form-group"><label>Thematic Fit</label>
+        <select id="f-opp-fit">
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Deadline</label><input type="date" id="f-opp-deadline"></div>
+      <div class="form-group"><label>Max Grant (€)</label><input type="number" id="f-opp-grant" placeholder="150000"></div>
+      <div class="form-group"><label>ISD Lead Role Possible?</label>
+        <select id="f-opp-lead">
+          <option value="yes">Yes — Lead</option>
+          <option value="consortium">Consortium Only</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Status</label>
+        <select id="f-opp-status">
+          <option value="new">New</option>
+          <option value="assessing">Assessing</option>
+          <option value="go">Go</option>
+          <option value="no-go">No-Go</option>
+        </select>
+      </div>
+      <div class="form-group form-span-2"><label>Link / Reference</label><input type="text" id="f-opp-link" placeholder="https://..."></div>
+      <div class="form-group form-span-2"><label>Call Abstract <span style="font-weight:400;color:var(--muted);font-size:11px;">— what does this call fund? Who can apply? Key parameters.</span></label><textarea id="f-opp-abstract" placeholder="2–3 sentence factual summary of the call: its objective, eligible applicants, funding range, and thematic scope." style="min-height:65px;"></textarea></div>
+      <div class="form-group form-span-2"><label>Notes & Angle for ISD Germany</label><textarea id="f-opp-notes" placeholder="Why relevant, what programme area fits, potential consortium partners…"></textarea></div>
+      <div class="form-group form-span-2"><label>Potential Partners</label><input type="text" id="f-opp-partners" placeholder="e.g. bpb, Amadeu Antonio Stiftung, university partner"></div>
+      <div class="form-group form-span-2"><label>Next Steps</label><textarea id="f-opp-nextsteps" placeholder="Immediate actions to take…" style="min-height:50px;"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="form-btn" onclick="closeModal('modal-opp')">Cancel</button>
+      <button class="form-btn primary" onclick="saveOpp()">Save Opportunity</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD PIPELINE MODAL -->
+<div class="modal-overlay hidden" id="modal-pip">
+  <div class="modal">
+    <div class="modal-title" id="modal-pip-title">Add Proposal</div>
+    <div class="form-grid">
+      <div class="form-group form-span-2"><label>Project Name *</label><input type="text" id="f-pip-name" placeholder="e.g. BC4D Phase IV"></div>
+      <div class="form-group"><label>Funder *</label><input type="text" id="f-pip-funder" placeholder="e.g. Stiftung Mercator"></div>
+      <div class="form-group"><label>Funder Type</label>
+        <select id="f-pip-funder-type">
+          <option value="german-ministry">German Ministry/Foundation</option>
+          <option value="eu-institution">EU Institution</option>
+          <option value="multilateral">Multilateral</option>
+          <option value="private">Private/Corporate</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Stage</label>
+        <select id="f-pip-stage">
+          <option value="idea">Idea</option>
+          <option value="scoping">Scoping</option>
+          <option value="drafting">Drafting</option>
+          <option value="submitted">Submitted</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Submission Deadline</label><input type="date" id="f-pip-deadline"></div>
+      <div class="form-group"><label>Budget (€)</label><input type="number" id="f-pip-budget" placeholder="150000"></div>
+      <div class="form-group"><label>Role</label>
+        <select id="f-pip-role">
+          <option value="Lead">Lead</option>
+          <option value="Consortium Partner">Consortium Partner</option>
+          <option value="Subcontractor">Subcontractor</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Theme</label><input type="text" id="f-pip-theme" placeholder="e.g. Disinformation, Extremism Prevention"></div>
+      <div class="form-group"><label>Call Reference</label><input type="text" id="f-pip-callref" placeholder="e.g. EC-CNECT/2025/OP/0012"></div>
+      <div class="form-group form-span-2"><label>Consortium Partners</label><input type="text" id="f-pip-partners" placeholder="e.g. bpb, TU Berlin, Amadeu Antonio Stiftung"></div>
+      <div class="form-group form-span-2"><label>Notes</label><textarea id="f-pip-notes" placeholder="Key proposal angle, status notes, risks…"></textarea></div>
+      <div class="form-group form-span-2"><label>Next Steps</label><textarea id="f-pip-nextsteps" placeholder="Immediate actions…" style="min-height:50px;"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="form-btn" onclick="closeModal('modal-pip')">Cancel</button>
+      <button class="form-btn primary" onclick="savePip()">Save Proposal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD FUNDER MODAL -->
+<div class="modal-overlay hidden" id="modal-funder">
+  <div class="modal">
+    <div class="modal-title">Add Funder</div>
+    <div class="form-grid">
+      <div class="form-group form-span-2"><label>Funder Name *</label><input type="text" id="f-fn-name" placeholder="e.g. Stiftung Mercator"></div>
+      <div class="form-group"><label>Type</label>
+        <select id="f-fn-type">
+          <option value="german-ministry">German Ministry/Foundation</option>
+          <option value="eu-institution">EU Institution</option>
+          <option value="multilateral">Multilateral</option>
+          <option value="private">Private/Corporate</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Relationship Status</label>
+        <select id="f-fn-rel">
+          <option value="cold">Cold</option>
+          <option value="warm">Warm</option>
+          <option value="active">Active Partner</option>
+          <option value="strategic">Strategic</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Key Contact</label><input type="text" id="f-fn-contact" placeholder="Name, email/role"></div>
+      <div class="form-group"><label>Last Interaction</label><input type="date" id="f-fn-last"></div>
+      <div class="form-group form-span-2"><label>Current / Past Projects</label><input type="text" id="f-fn-projects" placeholder="e.g. DPL Phase III, AHEAD"></div>
+      <div class="form-group form-span-2"><label>Next Action</label><input type="text" id="f-fn-nextaction" placeholder="e.g. Submit LOI by 15 April"></div>
+      <div class="form-group form-span-2"><label>Notes</label><textarea id="f-fn-notes" placeholder="Funder priorities, restrictions, relationships…"></textarea></div>
+    </div>
+    <div class="form-actions">
+      <button class="form-btn" onclick="closeModal('modal-funder')">Cancel</button>
+      <button class="form-btn primary" onclick="saveFunder()">Save Funder</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI SCAN MODAL -->
+<div class="modal-overlay hidden" id="modal-scan">
+  <div class="modal" style="width:640px;">
+    <button class="dp-close" onclick="closeModal('modal-scan')">✕</button>
+    <div class="modal-title">⚡ AI Opportunity Scan</div>
+
+    <div class="cw-step">
+      <div class="cw-step-num">1</div>
+      <div class="cw-step-body">
+        <div class="cw-step-label">Copy this prompt</div>
+        <div class="cw-step-hint">Click the button below to copy the prompt to your clipboard.</div>
+        <div class="cw-prompt-box" id="scan-prompt-box"></div>
+        <button class="cw-copy-btn" id="scan-copy-btn" onclick="copyScanPrompt()">⎘ Copy Prompt</button>
+      </div>
+    </div>
+
+    <div class="cw-step">
+      <div class="cw-step-num">2</div>
+      <div class="cw-step-body">
+        <div class="cw-step-label">Paste into Claude.ai and run</div>
+        <div class="cw-step-hint">Open Claude.ai in a new tab, paste the prompt, and send it. Claude will return a JSON list of new opportunities.</div>
+        <a class="cw-link" href="https://claude.ai" target="_blank">→ Open Claude.ai</a>
+      </div>
+    </div>
+
+    <div class="cw-step">
+      <div class="cw-step-num">3</div>
+      <div class="cw-step-body">
+        <div class="cw-step-label">Paste Claude's response here</div>
+        <div class="cw-step-hint">Copy the entire response from Claude and paste it below, then click Import.</div>
+        <textarea class="cw-paste-area" id="scan-paste-area" placeholder="Paste Claude's JSON response here…"></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="form-btn" onclick="closeModal('modal-scan')">Cancel</button>
+      <button class="form-btn primary" onclick="importScanResults()">✓ Import Opportunities</button>
+    </div>
+  </div>
+</div>
+
+<!-- WEEKLY REPORT MODAL -->
+<div class="modal-overlay hidden" id="modal-report">
+  <div class="modal" style="width:640px;">
+    <button class="dp-close" onclick="closeModal('modal-report')">✕</button>
+    <div class="modal-title">📊 Weekly Funding Report</div>
+
+    <div id="report-prompt-view">
+      <div class="cw-step">
+        <div class="cw-step-num">1</div>
+        <div class="cw-step-body">
+          <div class="cw-step-label">Copy this prompt</div>
+          <div class="cw-step-hint">This prompt contains your full live pipeline and opportunity data.</div>
+          <div class="cw-prompt-box" id="report-prompt-box"></div>
+          <button class="cw-copy-btn" id="report-copy-btn" onclick="copyReportPrompt()">⎘ Copy Prompt</button>
+        </div>
+      </div>
+      <div class="cw-step">
+        <div class="cw-step-num">2</div>
+        <div class="cw-step-body">
+          <div class="cw-step-label">Paste into Claude.ai and run</div>
+          <div class="cw-step-hint">Claude will return your weekly report with pipeline status, priorities, deadlines and recommended actions.</div>
+          <a class="cw-link" href="https://claude.ai" target="_blank">→ Open Claude.ai</a>
+        </div>
+      </div>
+      <div class="cw-step">
+        <div class="cw-step-num">3</div>
+        <div class="cw-step-body">
+          <div class="cw-step-label">Paste Claude's report here</div>
+          <textarea class="cw-paste-area" id="report-paste-area" placeholder="Paste Claude's report response here…" style="min-height:110px;"></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="form-btn" onclick="closeModal('modal-report')">Cancel</button>
+        <button class="form-btn primary" onclick="showPastedReport()">→ View Report</button>
+      </div>
+    </div>
+
+    <div id="report-result-view" style="display:none;">
+      <div id="report-content"></div>
+      <div class="form-actions" id="report-actions">
+        <button class="form-btn" onclick="backToReportPrompt()">← Back</button>
+        <button class="form-btn" onclick="closeModal('modal-report')">Close</button>
+        <button class="form-btn primary" onclick="exportReportPPTX()">↓ Download PPTX</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  STATE & DEFAULTS
+// ══════════════════════════════════════════
+const TODAY = new Date();
+const FMT = d => d ? new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}) : '–';
+const FMT_SHORT = d => d ? new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) : '–';
+const FMTM = n => n ? '€' + Number(n).toLocaleString('de-DE') : '–';
+const DAYS_UNTIL = d => d ? Math.ceil((new Date(d) - TODAY) / 86400000) : null;
+const URGENT = d => { const dd = DAYS_UNTIL(d); return dd !== null && dd <= 14; };
+const OVERDUE = d => { const dd = DAYS_UNTIL(d); return dd !== null && dd < 0; };
+
+let state = {
+  opportunities: [],
+  pipeline: [],
+  funders: [],
+  selectedItem: null,
+  selectedType: null,
+  activeTab: 'overview',
+  pipView: 'kanban',
+  sortField: {},
+  sortDir: {},
+  funderFilter: '',
+  editingId: null,
+  lastSync: null,
+  reportData: null
+};
+
+const DEFAULT_OPPORTUNITIES = [
+  { id: genId(), name: 'Demokratie Leben! 2025–2032 – Programmbereiche Bundeszentrale Infrastruktur & Modellvorhaben', funder: 'BMBFSFJ', funderType: 'german-ministry', instrument: 'Bundesprogramm', theme: 'Democratic Resilience / Civic Education', fit: 'high', deadline: '2025-05-30', maxGrant: 200000, leadPossible: 'yes', status: 'go', link: 'https://www.demokratie-leben.de/dl/programm', abstract: 'Bundesprogramm "Demokratie leben!" (3rd funding period 2025–2032, BMBFSFJ) funds civil-society projects for democratic participation, diversity, and extremism prevention at federal, state, and local levels. Eligible: registered non-profit organisations based in Germany. Funding per project typically €50k–€200k p.a. for multi-year projects.', notes: 'Modellprojekte focus on innovative democracy education approaches. BC4D and the municipal disinformation programme both fit well. Important: needs civil society lead, ISD Germany gGmbH is eligible.', partners: 'Lokale Partnerorganisationen, bpb', nextSteps: 'Request programme secretariat call, review eligibility criteria, draft concept note by end of April' },
+  { id: genId(), name: 'CERV-2025-CITIZENS-CIV: Civil Society Resilience against Disinformation', funder: 'European Commission / EACEA', funderType: 'eu-institution', instrument: 'CERV', theme: 'FIMI / Democratic Resilience', fit: 'high', deadline: '2025-06-12', maxGrant: 300000, leadPossible: 'yes', status: 'assessing', link: 'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/opportunities/calls-for-proposals?callIdentifier=CERV-2025-CITIZENS-CIV', abstract: 'CERV Citizens strand call (EACEA) supports civil society projects fostering citizen engagement and democratic participation across EU Member States. Non-profit organisations are eligible to apply as lead or consortium partner. Project duration 12–24 months; grants typically €150k–€400k.', notes: 'Strong fit for BC4D-style corporate resilience building or an expanded municipal disinformation programme. ISD Germany has track record with EC (DG CONNECT DSA project) that strengthens credibility.', partners: 'European civil society orgs, EDMO network', nextSteps: 'Check CERV workplan, identify 2-3 consortium partners in DE/AT/NL' },
+  { id: genId(), name: 'ISF-2025-TF2-AG-CEEP: Community Engagement & Empowerment Programme', funder: 'DG HOME / ISF Thematic Facility', funderType: 'eu-institution', instrument: 'Internal Security Fund', theme: 'Extremism Prevention / PVE', fit: 'high', deadline: '2025-07-15', maxGrant: 400000, leadPossible: 'consortium', status: 'new', link: 'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/programmes/isf', abstract: 'ISF Thematic Facility call (DG HOME) targeting prevention of violent radicalisation online: strengthening civil-society capacity to counter extremist content and provide community-based offline alternatives. Budget €5M total; max grant ~€400k. CSOs and public authorities are eligible.', notes: 'Fits ISD Germany extremism prevention work and strong cities networks. Potential to bring AHEAD.Tech framing into a PVE training context.', partners: 'Strong Cities, local authorities, OSCE', nextSteps: 'Identify lead partner (research institute or public authority preferred), develop partnership concept' },
+  { id: genId(), name: 'BNetzA Gutachten: DSA Systemic Risk Monitoring 2025/26', funder: 'Bundesnetzagentur (BNetzA)', funderType: 'german-ministry', instrument: 'Forschungsauftrag / Studie', theme: 'DSA / Platform Accountability', fit: 'high', deadline: '2025-04-30', maxGrant: 120000, leadPossible: 'yes', status: 'go', link: 'https://www.bundesnetzagentur.de/DE/Allgemeines/DieBundesnetzagentur/BeschaffungAusschreibungen/start.html', abstract: 'BNetzA issues research and expert contracts for DSA implementation monitoring and platform accountability (VLOPs/VLOSEs), published via the Federal procurement portal (evergabe-online). Contracts are typically direct commissioning or restricted tenders for expert organisations with demonstrated DSA track record.', notes: 'Direct follow-on from existing BNetzA relationship. ISD Germany has unique DSA monitoring expertise via DG CONNECT project. Pitch: ISD as expert partner for ongoing VLOPs compliance assessment.', partners: 'ISD UK', nextSteps: 'Send updated capability brief to BNetzA contact, propose scoping meeting in May' },
+  { id: genId(), name: 'Zeit Stiftung – Wissen schafft Demokratie 2025', funder: 'Zeit Stiftung Ebelin und Gerd Bucerius', funderType: 'german-ministry', instrument: 'Projektförderung', theme: 'Democratic Resilience / Municipal Capacity', fit: 'high', deadline: '2025-04-15', maxGrant: 180000, leadPossible: 'yes', status: 'go', link: 'https://www.zeit-stiftung.de/foerderung/', abstract: 'Zeit Stiftung funds projects strengthening democracy, education, and civic participation, with a focus on science-society dialogue and democratic education. Project grants typically €50k–€200k; applications by invitation or through direct approach to programme officers.', notes: 'Präventionsakademie concept for MV/SA municipalities is the right vehicle. Needs to foreground local democratic capacity angle. Previous interest from Zeit Stiftung confirmed.', partners: 'Kommunen in MV und SA', nextSteps: 'Finalise full concept note, confirm municipality letters of intent, submit by 15 April' },
+  { id: genId(), name: 'Horizon Europe – DEMOCRACY cluster: Disinformation & Democratic Backsliding', funder: 'European Commission / EISMEA', funderType: 'eu-institution', instrument: 'Horizon Europe', theme: 'Research: FIMI / Democratic Backsliding', fit: 'medium', deadline: '2025-09-10', maxGrant: 500000, leadPossible: 'consortium', status: 'assessing', link: 'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/programmes/horizon', abstract: 'Horizon Europe Cluster 2 (Culture, Creativity and Inclusive Society) funds collaborative research on democratic processes, disinformation, and societal resilience. Large consortia (8–15 partners) are standard; ISD-type organisations typically participate as work-package leads for training/civil-society engagement.', notes: 'Large consortium research call. ISD Germany best placed as WP lead on training/civil society engagement. Needs academic lead partner (Uni Berlin, FU, Hertie School).', partners: 'Hertie School, FU Berlin, European academic partner', nextSteps: 'Identify academic lead, arrange consortium meeting Q2 2025' },
+  { id: genId(), name: 'Robert Bosch Stiftung – Demokratie & Zivilgesellschaft 2025', funder: 'Robert Bosch Stiftung', funderType: 'german-ministry', instrument: 'Projektförderung', theme: 'Civic Education / Digital Literacy', fit: 'high', deadline: '2025-08-01', maxGrant: 150000, leadPossible: 'yes', status: 'new', link: 'https://www.bosch-stiftung.de/en/funding', abstract: 'Robert Bosch Stiftung funds civil-society projects on democracy, education, and international understanding. Grants for German organisations typically €50k–€200k; proposals must align with the foundation\'s published programme priorities for the year, usually available Q1.', notes: 'Strong programmatic fit for BC4D or a new digital literacy programme. Bosch Stiftung increasingly interested in hybrid threats to democracy. Warm relationship via network contacts.', partners: 'Potential civil society co-applicant', nextSteps: 'Reach out to programme officer, request informational meeting' },
+  { id: genId(), name: 'Google.org Impact Challenge: Tech & Society', funder: 'Google.org', funderType: 'private', instrument: 'Impact Challenge Grant', theme: 'Tech Accountability / Digital Literacy', fit: 'medium', deadline: '2025-06-30', maxGrant: 100000, leadPossible: 'yes', status: 'assessing', link: 'https://impactchallenge.withgoogle.com', abstract: 'Google.org Impact Challenges award grants to non-profit organisations developing technology-driven solutions to major societal challenges. Grants typically $50k–$1M; organisations must be registered non-profits. Calls are region/theme specific and open periodically throughout the year.', notes: 'Exploratory. Potential fit for a BC4D digital tool or the Manosphäre monitoring methodology. Google has funded ISD UK work before.', partners: 'ISD UK', nextSteps: 'Check eligibility for gGmbH, assess fit with current call criteria' },
+  { id: genId(), name: 'UCPM – INFORMED Phase 2 (Continuation)', funder: 'EU Civil Protection Mechanism / DG ECHO', funderType: 'eu-institution', instrument: 'UCPM / Prevention', theme: 'Crisis Disinformation / Resilience Training', fit: 'high', deadline: '2025-10-01', maxGrant: 350000, leadPossible: 'yes', status: 'go', link: 'https://ec.europa.eu/info/funding-tenders/opportunities/portal/screen/programmes/ucpm', abstract: 'EU Civil Protection Mechanism (UCPM) Prevention calls fund projects building resilience against civil protection risks, including disinformation in crisis contexts. Eligible: public authorities and civil-society organisations. Grants €200k–€500k; calls published annually on the F&T portal under programme identifier UCPM.', notes: 'Natural continuation from INFORMED Phase 1. The 5 scenario modules give us a strong deliverables track record. Key to emphasise scalability and cross-border reach.', partners: 'Existing INFORMED consortium partners', nextSteps: 'Draft concept note with WP structure, arrange consortium call, confirm DG ECHO contact interest' },
+  { id: genId(), name: 'Alfred Landecker Foundation – Democracy & Memory 2025', funder: 'Alfred Landecker Foundation', funderType: 'german-ministry', instrument: 'Project Grant', theme: 'Antisemitism / Democratic Memory', fit: 'medium', deadline: '2025-07-01', maxGrant: 130000, leadPossible: 'yes', status: 'new', link: 'https://landecker.org/apply/', abstract: 'Alfred Landecker Foundation funds projects addressing antisemitism, Holocaust remembrance, and the defence of democracy. Grants typically €50k–€200k for 1–3 year projects; organisations must apply through the foundation\'s online portal. Priority areas include digital antisemitism and countering extremist narratives.', notes: 'Active partner on DPL. Potential for a standalone ISD Germany project on countering online antisemitism or a Holocaust denial monitoring/education programme.', partners: 'CCOA network', nextSteps: 'Arrange conversation with Landecker programme team about 2025 priorities' },
+  { id: genId(), name: 'OSCE/ODIHR – Countering Disinformation around Elections', funder: 'OSCE/ODIHR', funderType: 'multilateral', instrument: 'Service Contract / Grant', theme: 'Election Integrity / FIMI', fit: 'medium', deadline: null, maxGrant: 80000, leadPossible: 'yes', status: 'new', link: 'https://www.osce.org/odihr/elections', abstract: 'OSCE/ODIHR funds and commissions expert organisations for election observation, election integrity, and combating disinformation around electoral processes across the OSCE region. Contracts are rolling and often direct-commissioned; capacity for election monitoring, media literacy, and FIMI research is prioritised.', notes: 'Rolling call. ISD Germany monitoring work around German Bundestagswahl 2025 is directly relevant. Approach ODIHR with track record.', partners: 'ISD UK', nextSteps: 'Submit expression of interest, leverage Bundestagswahl monitoring report as credential' },
+  { id: genId(), name: 'Stiftung Mercator – Zusammenhalt durch Teilhabe / Digital', funder: 'Stiftung Mercator', funderType: 'german-ministry', instrument: 'Projektförderung', theme: 'Digital Inclusion / Disinformation Resilience', fit: 'medium', deadline: '2025-06-01', maxGrant: 200000, leadPossible: 'yes', status: 'assessing', link: 'https://www.stiftung-mercator.de/en/our-funding/', abstract: 'Stiftung Mercator funds projects on social cohesion, democratic participation, and digital society with a focus on Germany and Europe. Grants typically €50k–€300k for 2–3 year projects; proposals must align with Mercator\'s published programme areas and are usually submitted after an initial enquiry letter to the relevant programme team.', notes: 'Mercator has funded AHEAD and has warm relationship with ISD Germany. New priority area around digital resilience for marginalised communities could fit an expanded BC4D or municipal approach.', partners: 'Local community orgs', nextSteps: 'Review 2025 Mercator funding priorities, set up meeting with programme contact' }
+];
+
+const DEFAULT_PIPELINE = [
+
+  // ═══════════════════════════════════════
+  // APPROVED — Contracted & Active
+  // ═══════════════════════════════════════
+  { id: genId(), name: 'CCOA 2.0', funder: 'google.org', funderType: 'private', stage: 'approved', deadline: null, budget: 750000, theme: 'Hate & Extremism / Education', role: 'Lead', callRef: 'ID-204', partners: '', notes: 'Contracted and active. Coalition of Communities against Online Antisemitism 2.0. Running Jan 2025 – Dec 2026.', nextSteps: 'Deliver programme milestones, prepare interim report' },
+  { id: genId(), name: 'Expanded DSA Compliance Monitoring (EC CNECT)', funder: 'EC (DG CNECT)', funderType: 'eu-institution', stage: 'approved', deadline: null, budget: 4800000, theme: 'Digital Policy / DSA / Platform Accountability', role: 'Lead', callRef: 'ID-194', partners: 'CASM, AWO, Reset (TBC)', notes: 'Contracted and active. Major EC commercial contract for expanded DSA VLOPs compliance monitoring. Started Jan 2025.', nextSteps: 'Deliver monitoring reports per workplan schedule' },
+  { id: genId(), name: 'Support to Prevent & Counter Illegal Hate Speech Online (DG JUST)', funder: 'European Commission (DG JUST)', funderType: 'eu-institution', stage: 'approved', deadline: null, budget: 318800, theme: 'Hate & Extremism / Information Operations', role: 'Lead', callRef: 'ID-259', partners: '', notes: 'Contracted and active. Commercial contract starting Jan 2026. Focuses on illegal hate speech online across EU.', nextSteps: 'Finalise contract documentation, set up project team' },
+  { id: genId(), name: 'DPL Phase III – Alfred Landecker Foundation', funder: 'Alfred Landecker Foundation', funderType: 'german-ministry', stage: 'approved', deadline: null, budget: 873193, theme: 'Digital Policy / DSA / Regulatory Capacity', role: 'Lead', callRef: 'ID-89', partners: '', notes: 'Contracted and active. Digital Policy Lab Phase III, Oct 2023 – Oct 2025.', nextSteps: 'Prepare Phase III final report; develop Phase IV concept' },
+  { id: genId(), name: 'Upholding Democracy Coalition (bpb)', funder: 'German Federal Agency for Civic Education (bpb)', funderType: 'german-ministry', stage: 'approved', deadline: null, budget: 426209, theme: 'Democratic Resilience / Education', role: 'Lead', callRef: 'ID-286', partners: '', notes: 'Successful — pending signature. Start date Dec 2025. Local democracy coalition training programme.', nextSteps: 'Finalise contract with bpb, set up project management structure' },
+  { id: genId(), name: 'ANTIGONE – Freedom of Expression (Horizon Europe)', funder: 'Horizon Europe (EC)', funderType: 'eu-institution', stage: 'approved', deadline: null, budget: 352741, theme: 'Information Operations / Digital Policy', role: 'Lead', callRef: 'ID-368', partners: 'ASD', notes: 'Successful — pending signature. Start 1 June 2026, 36 months. Freedom of expression and online hate speech research consortium.', nextSteps: 'Complete grant agreement process, set up WP structure' },
+  { id: genId(), name: 'Pilot Training for Local Authorities (NRW)', funder: 'State Chancellery NRW', funderType: 'german-ministry', stage: 'approved', deadline: null, budget: 98250, theme: 'Education / Strong Cities Network', role: 'Lead', callRef: 'ID-353', partners: '', notes: 'Successful — pending signature. Start Dec 2025.', nextSteps: 'Finalise contract, confirm trainer roster' },
+  { id: genId(), name: 'European Research Hub on Antisemitism (Horizon Europe via JPR)', funder: 'Horizon Europe (EC) via JPR', funderType: 'eu-institution', stage: 'approved', deadline: null, budget: null, theme: 'Hate & Extremism / Education', role: 'Consortium Partner', callRef: 'ID-360', partners: 'JPR (lead)', notes: 'Successful — pending signature. ISD UK/Germany. Approx. £50k ISD share.', nextSteps: 'Confirm ISD Germany role scope, sign consortium agreement' },
+  { id: genId(), name: 'Unleashing Local Governments West Africa (German MFA)', funder: 'German Ministry of Foreign Affairs', funderType: 'german-ministry', stage: 'approved', deadline: null, budget: 493050, theme: 'Strong Cities Network / Hate & Extremism', role: 'Lead', callRef: 'ID-318', partners: 'CASM + 3–4 TBC', notes: 'Contracted and active. West Africa rehabilitation and reintegration programme.', nextSteps: 'Confirm methodology, onboard consortium partners' },
+  { id: genId(), name: 'Support to Human Rights & Civil Society Jordan (EC)', funder: 'European Commission', funderType: 'eu-institution', stage: 'approved', deadline: null, budget: 1052599, theme: 'Hate & Extremism / Democracy', role: 'Lead', callRef: 'ID-71', partners: '', notes: 'Contracted and active. Jan 2024 – Jan 2026.', nextSteps: 'Deliver midterm report, plan remaining programme activities' },
+  { id: genId(), name: 'Joint Study on Hate Speech – Uni Leipzig (VW Foundation)', funder: 'VW Foundation', funderType: 'private', stage: 'approved', deadline: null, budget: 112000, theme: 'Hate & Extremism / Digital Policy', role: 'Lead', callRef: 'ID-191', partners: 'University of Leipzig', notes: 'Contracted and active. Oct 2025 – Oct 2026.', nextSteps: 'Kick off research collaboration, agree methodology with Leipzig team' },
+  { id: genId(), name: 'BC4D Phase III (Bosch & Hertie Foundation)', funder: 'Bosch & Hertie Foundation', funderType: 'german-ministry', stage: 'approved', deadline: null, budget: 506128, theme: 'Education / Disinformation', role: 'Lead', callRef: 'ID-82', partners: '', notes: 'Contracted and active. Aug 2023 – Feb 2025.', nextSteps: 'Prepare final report; develop Phase IV concept' },
+  { id: genId(), name: 'MediaACT: Media Awareness & Critical Thinking (German Embassy Tallinn)', funder: 'German Embassy in Tallinn via Mondo', funderType: 'german-ministry', stage: 'approved', deadline: null, budget: 900, theme: 'Information Operations / Education', role: 'Lead', callRef: 'ID-381', partners: 'Mondo', notes: 'Successful — pending signature. Small Baltic media literacy subaward.', nextSteps: 'Confirm scope, assign project lead' },
+
+  // ═══════════════════════════════════════
+  // SUBMITTED — Full proposals submitted
+  // ═══════════════════════════════════════
+  { id: genId(), name: 'Monitoring of Islamist Extremism in Germany (BMBF)', funder: 'Federal Ministry of Education and Research (BMBF)', funderType: 'german-ministry', stage: 'submitted', deadline: null, budget: 487270, theme: 'Hate & Extremism / Education', role: 'Lead', callRef: 'ID-319', partners: '', notes: 'Full proposal submitted. Start planned April 2026, 48 months.', nextSteps: 'Await BMBF decision; follow up with programme officer' },
+  { id: genId(), name: 'CERV-EQUAL – Countering Anti-Muslim Hatred (EC DG JUST / EACEA)', funder: 'EC DG JUST / EACEA', funderType: 'eu-institution', stage: 'submitted', deadline: null, budget: 250000, theme: 'Hate & Extremism / Education', role: 'Lead', callRef: 'ID-350', partners: 'TBC', notes: 'Full proposal submitted. Start planned July 2026, 12–24 months.', nextSteps: 'Await CERV-EQUAL evaluation result' },
+  { id: genId(), name: 'Gendered Disinformation Project (BMBF)', funder: 'Federal Ministry for Education and Research (BMBF)', funderType: 'german-ministry', stage: 'submitted', deadline: null, budget: 35000, theme: 'Digital Policy / Hate & Extremism', role: 'Consortium Partner', callRef: 'ID-229', partners: 'Weizenbaum Institute + TU Munich (lead)', notes: 'Full proposal submitted. Start planned September 2025, 36 months.', nextSteps: 'Await BMBF decision; confirm ISD Germany deliverables scope' },
+  { id: genId(), name: 'Germanosphere 2.0 (VW Foundation)', funder: 'VW Foundation', funderType: 'private', stage: 'submitted', deadline: null, budget: 400000, theme: 'Hate & Extremism / Research', role: 'Lead', callRef: 'ID-372', partners: 'Freie Universität Berlin, SCRIPTS', notes: 'Full proposal submitted. Start 2026.', nextSteps: 'Await VW Foundation decision' },
+  { id: genId(), name: 'Study on Climate-Related Disinformation (BMLUK Austria)', funder: 'Austrian Federal Ministry for Agriculture & Regions (BMLUK)', funderType: 'german-ministry', stage: 'submitted', deadline: null, budget: 90000, theme: 'Climate / Information Operations', role: 'Lead', callRef: 'ID-402', partners: '', notes: 'Full proposal submitted. Start 2026.', nextSteps: 'Await BMLUK decision' },
+  { id: genId(), name: 'Economic Disinformation Monitoring (GFFO / MFA)', funder: 'German Federal Foreign Office (GFFO)', funderType: 'german-ministry', stage: 'submitted', deadline: null, budget: 380000, theme: 'Information Operations / Digital Policy', role: 'Lead', callRef: 'ID-385', partners: '', notes: 'Full proposal submitted. Monitoring disinformation around economic fears. Start TBC, 14 months.', nextSteps: 'Await decision from GFFO programme contact' },
+  { id: genId(), name: 'Capacity Building in Syria (GFFO / MFA)', funder: 'German Federal Foreign Office (GFFO)', funderType: 'german-ministry', stage: 'submitted', deadline: null, budget: null, theme: 'Strong Cities Network / Education', role: 'Lead', callRef: 'ID-386', partners: 'DAR Justice', notes: 'Full proposal submitted. 6–12 months. Capacity building for Syrian government on countering disinformation.', nextSteps: 'Await GFFO decision' },
+  { id: genId(), name: 'Digital Euro Disinformation Study (European Central Bank)', funder: 'European Central Bank', funderType: 'eu-institution', stage: 'submitted', deadline: null, budget: 20000, theme: 'Information Operations / Digital Policy', role: 'Lead', callRef: '', partners: '', notes: 'Full proposal submitted. 6-month study on disinformation dynamics around the Digital Euro.', nextSteps: 'Await ECB decision' },
+  { id: genId(), name: 'Digital City Makers (Dt. Postcode Lottery Foundation)', funder: 'Deutsche Postcode Lotterie Stiftung', funderType: 'german-ministry', stage: 'submitted', deadline: null, budget: 100000, theme: 'Education / Digital Policy', role: 'Lead', callRef: '', partners: '', notes: 'Full proposal submitted. 12-month digital democracy education project.', nextSteps: 'Await foundation decision' },
+  { id: genId(), name: 'EU–UK Think Tank Collaboration (Horizon Europe)', funder: 'Horizon Europe (EC)', funderType: 'eu-institution', stage: 'submitted', deadline: null, budget: 172000, theme: 'Information Operations / Digital Policy', role: 'Lead', callRef: '', partners: '', notes: 'Full proposal submitted. 36-month EU–UK think tank collaboration on information operations.', nextSteps: 'Await evaluation result' },
+  { id: genId(), name: 'Council of Europe Disinformation Framework Agreement', funder: 'Council of Europe', funderType: 'multilateral', stage: 'submitted', deadline: null, budget: null, theme: 'Information Operations / Digital Policy', role: 'Lead', callRef: 'ID-426', partners: '', notes: 'Concept note submitted. Framework consultancy agreement on tackling disinformation. TDB value.', nextSteps: 'Await CoE decision on framework' },
+  { id: genId(), name: 'FIMI 2 – SHIELD (Horizon Europe) — WAITLISTED', funder: 'Horizon Europe (EC)', funderType: 'eu-institution', stage: 'submitted', deadline: null, budget: 200000, theme: 'Information Operations / Digital Policy', role: 'Lead', callRef: 'ID-367', partners: 'Trilateral, ASD', notes: 'Waitlisted. Start planned Jan 2026, 36 months. Continuation of FIMI 1 work on Foreign Information Manipulation and Interference.', nextSteps: 'Monitor reserve list; check if budget allows waitlisted projects to be funded' },
+
+  // ═══════════════════════════════════════
+  // DRAFTING — Concept notes submitted
+  // ═══════════════════════════════════════
+  { id: genId(), name: 'Prevention Academy for Online Harms (German Ministry of Interior)', funder: 'German Federal Ministry of Interior (BMI)', funderType: 'german-ministry', stage: 'drafting', deadline: null, budget: 300000, theme: 'Hate & Extremism / Strong Cities Network / Education', role: 'Lead', callRef: '', partners: '', notes: 'Concept note submitted. Budget range €100k–€500k. Start planned September 2025, 12–24 months.', nextSteps: 'Await BMI feedback on concept; develop full proposal if invited' },
+  { id: genId(), name: 'Strengthening Inclusive Local Migration Governance – Mega Sporting Events (EU MPF)', funder: 'EU Migration Partnership Facility', funderType: 'eu-institution', stage: 'drafting', deadline: null, budget: 1500000, theme: 'Strong Cities Network / Information Operations', role: 'Lead', callRef: 'ID-424', partners: '', notes: 'Concept note submitted. 30-month project on inclusive local migration governance linked to mega sporting events. Start January 2026.', nextSteps: 'Await MPF feedback; develop full proposal' },
+  { id: genId(), name: 'Strengthening National–Local Cooperation to Prevent Hate & Extremism (CITCO Spain)', funder: 'CITCO Spain', funderType: 'multilateral', stage: 'drafting', deadline: null, budget: 100000, theme: 'Strong Cities Network / Hate & Extremism', role: 'Lead', callRef: 'ID-280', partners: '', notes: 'Concept note submitted. 12 months. Start September 2025.', nextSteps: 'Await CITCO feedback on concept' },
+  { id: genId(), name: 'CBRN Monitoring (Federal Police)', funder: 'German Federal Police', funderType: 'german-ministry', stage: 'drafting', deadline: null, budget: 50000, theme: 'Hate & Extremism', role: 'Lead', callRef: '', partners: '', notes: 'Concept note submitted. 3–6 month monitoring project. Start TBC.', nextSteps: 'Await Federal Police decision on concept' },
+  { id: genId(), name: 'Reclaim Digital Safety (Stiftung Mercator)', funder: 'Stiftung Mercator', funderType: 'german-ministry', stage: 'drafting', deadline: null, budget: null, theme: 'Digital Policy / Education', role: 'Lead', callRef: 'ID-362', partners: '', notes: 'Concept note submitted. Budget and timeline TBC.', nextSteps: 'Await Mercator stage 1 feedback; refine full proposal concept' },
+  { id: genId(), name: 'Mainstreaming Extremism – Concept Note (Zeit Foundation)', funder: 'Zeit Foundation', funderType: 'german-ministry', stage: 'drafting', deadline: null, budget: 150000, theme: 'Hate & Extremism / Information Operations', role: 'Lead', callRef: 'ID-346', partners: '', notes: 'Concept note submitted. Start June/July 2025.', nextSteps: 'Await feedback; develop full proposal' },
+  { id: genId(), name: 'ESA Action Plan on Disinfo & Hate Speech (EU FPI)', funder: 'European Union (FPI.2)', funderType: 'eu-institution', stage: 'drafting', deadline: null, budget: 550458, theme: 'Strong Cities Network / Information Operations', role: 'Lead', callRef: 'ID-219', partners: 'EACLGA', notes: 'Concept stage 1 submitted. EU FPI-funded action plan on disinformation and hate speech in Eastern Sub-Saharan Africa.', nextSteps: 'Await stage 1 feedback; prepare full proposal if invited' },
+  { id: genId(), name: 'MENA Action Plan on Hate Speech (EU FPI)', funder: 'European Union (FPI.2)', funderType: 'eu-institution', stage: 'drafting', deadline: null, budget: 550458, theme: 'Strong Cities Network / Hate & Extremism', role: 'Lead', callRef: 'ID-220', partners: '', notes: 'Concept stage 1 submitted. EU FPI-funded action plan on hate speech across the MENA region.', nextSteps: 'Await stage 1 feedback; prepare full proposal if invited' },
+
+  // ═══════════════════════════════════════
+  // SCOPING — In development
+  // ═══════════════════════════════════════
+  { id: genId(), name: 'AI and Extremism', funder: 'TBC', funderType: 'eu-institution', stage: 'scoping', deadline: null, budget: null, theme: 'Hate & Extremism', role: 'Lead', callRef: '', partners: '', notes: 'In development. Project on AI tools and extremist content. Funder and instrument TBC. Start 2026.', nextSteps: 'Define project concept; identify appropriate funder (ISF, Horizon, Foundation)' },
+  { id: genId(), name: 'Disaster Disinformation Proposal (EU UCPM)', funder: 'EU Civil Protection Mechanism (DG ECHO)', funderType: 'eu-institution', stage: 'scoping', deadline: null, budget: null, theme: 'Information Operations / Crisis Resilience', role: 'Lead', callRef: '', partners: '', notes: 'In development. UCPM-funded project on disinformation in disaster/crisis contexts. Building on INFORMED experience.', nextSteps: 'Monitor UCPM 2026 call publication; develop concept note' },
+  { id: genId(), name: 'Climate Disinformation Communication (Horizon Europe)', funder: 'Horizon Europe (EC)', funderType: 'eu-institution', stage: 'scoping', deadline: null, budget: 3500000, theme: 'Climate / Information Operations', role: 'Consortium Partner', callRef: 'ID-413', partners: 'Trilateral (lead)', notes: 'In development. Horizon Europe consortium. Budget €3–4m total, 36 months. Start 2027.', nextSteps: 'Confirm ISD Germany WP scope with Trilateral; agree budget allocation' },
+  { id: genId(), name: 'Cross-Ideology Antisemitism (Office of Katharina von Schnurbein)', funder: 'European Commission (Office of K. von Schnurbein)', funderType: 'eu-institution', stage: 'scoping', deadline: null, budget: null, theme: 'Hate & Extremism', role: 'Lead', callRef: 'ID-378', partners: '', notes: 'In development. Project on cross-ideological antisemitism with the EC Coordinator on Combating Antisemitism.', nextSteps: 'Set up scoping meeting with Schnurbein office; develop concept note' },
+  { id: genId(), name: 'Digital Democracy Academy', funder: 'TBC', funderType: 'german-ministry', stage: 'scoping', deadline: null, budget: null, theme: 'Education / Democratic Resilience', role: 'Lead', callRef: '', partners: '', notes: 'In development. Academy concept for digital democracy education. Funder TBC.', nextSteps: 'Define concept; identify funder — Mercator, Zeit, or German federal ministry' },
+
+  // ═══════════════════════════════════════
+  // IDEA — In discussion
+  // ═══════════════════════════════════════
+  { id: genId(), name: 'Spread of Violent Extremist Content × Local CSOs (ISF CEEP)', funder: 'European Union (ISF)', funderType: 'eu-institution', stage: 'idea', deadline: null, budget: null, theme: 'Hate & Extremism / Strong Cities Network', role: 'Lead', callRef: 'ID-425', partners: '', notes: 'In discussion. ISF CEEP call on spread of violent extremist content and local civil society response. 24 months.', nextSteps: 'Confirm consortium concept; identify public authority lead if required' },
+
+  // ═══════════════════════════════════════
+  // REJECTED — Unsuccessful proposals
+  // ═══════════════════════════════════════
+  { id: genId(), name: 'SafeSpaces: European Democratic Information Space (CERV) — UNSUCCESSFUL', funder: 'EC CERV', funderType: 'eu-institution', stage: 'rejected', deadline: null, budget: 43376, theme: 'Information Operations / Hate & Extremism', role: 'Consortium Partner', callRef: 'ID-248', partners: 'FIDU (lead)', notes: 'Unsuccessful. CERV application with FIDU. Lessons learned for next CERV call.', nextSteps: 'Review evaluator feedback; consider resubmission in next CERV round' },
+  { id: genId(), name: 'BNetzA Transparency in Content Moderation Study — UNSUCCESSFUL', funder: 'Bundesnetzagentur (BNetzA)', funderType: 'german-ministry', stage: 'rejected', deadline: null, budget: 30000, theme: 'Digital Policy / Platform Accountability', role: 'Lead', callRef: '', partners: '', notes: 'Unsuccessful. Study on transparency in content moderation and content bans. March 2026 start had been planned.', nextSteps: 'Request feedback from BNetzA; maintain relationship for future commissions' },
+  { id: genId(), name: 'BRIDGE – Resilience to Gendered Hate & Disinformation (CERV CHAR-LITI) — UNSUCCESSFUL', funder: 'EC CERV (CHAR-LITI)', funderType: 'eu-institution', stage: 'rejected', deadline: null, budget: 120000, theme: 'Hate & Extremism / Education', role: 'Lead', callRef: '', partners: '', notes: 'Unsuccessful. CERV project on building resilience to gendered hate and disinformation through equality-based counternarratives. 24 months.', nextSteps: 'Review feedback; consider adaptation for CERV-EQUAL or DAPHNE strand' },
+  { id: genId(), name: 'Hope 2.0 – WJC (CERV CHAR-LITI) — UNSUCCESSFUL', funder: 'EC CERV (CHAR-LITI)', funderType: 'eu-institution', stage: 'rejected', deadline: null, budget: 220000, theme: 'Hate & Extremism', role: 'Lead', callRef: '', partners: 'WJC', notes: 'Unsuccessful. CERV application with World Jewish Congress. 18 months. Start planned 2026.', nextSteps: 'Discuss lessons learned with WJC; explore alternative funding routes' },
+];
+
+
+
+const DEFAULT_FUNDERS = [
+  { id: genId(), name: 'Bundesnetzagentur (BNetzA)', type: 'german-ministry', rel: 'active', contact: 'Referat Regulierung DSA / via ISD Germany contact', lastInteraction: '2025-02-15', projects: 'DSA/BNetzA Systemic Risks Study (ongoing)', nextAction: 'Send capability brief, propose scoping meeting May 2025', notes: 'Key regulatory funder in Germany for DSA implementation work. ISD Germany is positioned as expert partner. Commissioning style rather than open calls.' },
+  { id: genId(), name: 'European Commission – DG CONNECT', type: 'eu-institution', rel: 'strategic', contact: 'Programme Officer, Digital Services Coordination', lastInteraction: '2025-01-20', projects: 'EC-CNECT/2024/OP/0007 (DSA VLOPs compliance), EC-CNECT/2024/OP/0052', nextAction: 'Maintain engagement, monitor next CERV and Digital Europe calls', notes: 'ISD Germany leads DG CONNECT consortium for DSA compliance monitoring. Very strong relationship. Watch for continuation call in 2025.' },
+  { id: genId(), name: 'Alfred Landecker Foundation', type: 'german-ministry', rel: 'strategic', contact: 'Programme Director, Democracy & Memory', lastInteraction: '2025-01-10', projects: 'Digital Policy Lab (co-funder), CCOA', nextAction: 'Explore Phase IV DPL co-funding, new standalone project proposal', notes: 'Core strategic funder for ISD Germany. Very warm relationship, multi-year commitment to DPL. Interested in antisemitism, memory culture, democratic threats.' },
+  { id: genId(), name: 'Zeit Stiftung Ebelin und Gerd Bucerius', type: 'german-ministry', rel: 'warm', contact: 'Programm Demokratie / Bildung', lastInteraction: '2024-11-20', projects: 'Präventionsakademie (in development)', nextAction: 'Submit full proposal by 15 April 2025', notes: 'Strong programmatic fit with municipal resilience programme. Präventionsakademie call is highly relevant. Active outreach underway.' },
+  { id: genId(), name: 'Stiftung Mercator', type: 'german-ministry', rel: 'warm', contact: 'Programm Demokratie und Zusammenhalt', lastInteraction: '2024-12-05', projects: 'AHEAD (completed), exploring new proposal', nextAction: 'Set up meeting Q2 2025, present AHEAD.Tech follow-up concept', notes: 'Has funded AHEAD via Gates-Mercator partnership. Interested in digital resilience and social cohesion. Warm relationship maintained post-AHEAD.' },
+  { id: genId(), name: 'BMFSFJ / Bundesprogramm Demokratie Leben!', type: 'german-ministry', rel: 'warm', contact: 'Regiestelle Demokratie Leben, Berlin', lastInteraction: '2025-01-15', projects: 'Modellprojekt in development', nextAction: 'Submit Modellprojekt application by May 2025', notes: 'Core national democracy funding instrument. ISD Germany eligible as gGmbH. Strong thematic alignment with civic education and extremism prevention.' },
+  { id: genId(), name: 'DG HOME / Internal Security Fund (ISF)', type: 'eu-institution', rel: 'warm', contact: 'DG HOME, Unit F2 – Radicalisation', lastInteraction: '2024-10-01', projects: 'Exploring ISF consortium', nextAction: 'Identify public authority lead partner for ISF application', notes: 'ISF requires public authority as lead applicant. ISD Germany needs consortium partner. Strong fit on PVE and extremism prevention track record.' },
+  { id: genId(), name: 'Council of Europe', type: 'multilateral', rel: 'cold', contact: 'Directorate of Information Society, Media & Sports', lastInteraction: '2024-06-01', projects: 'None active', nextAction: 'Explore HELP programme partnership and StratCom framing', notes: 'Potential for hate speech and digital literacy programme delivery. CoE has standing frameworks (HELP, Pestalozzi) that ISD Germany could plug into.' },
+  { id: genId(), name: 'Robert Bosch Stiftung', type: 'german-ministry', rel: 'warm', contact: 'Bereich Demokratie', lastInteraction: '2024-09-15', projects: 'None active', nextAction: 'Request informational meeting, explore 2025 priorities', notes: 'Major German foundation with strong civic education and democracy programme. Warm network contact available. First proposal to Bosch would be an important milestone for ISD Germany.' },
+  { id: genId(), name: 'Google.org', type: 'private', rel: 'warm', contact: 'Via ISD UK Google partnership contact', lastInteraction: '2024-11-01', projects: 'Exploring Impact Challenge', nextAction: 'Check Impact Challenge eligibility for gGmbH', notes: 'ISD UK has longstanding Google partnership. ISD Germany benefit from this via consortium. Potential standalone project on disinformation monitoring tools.' }
+];
+
+// ══════════════════════════════════════════
+//  STORAGE
+// ══════════════════════════════════════════
+function lsGet(key) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e) { return null; } }
+function lsSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+
+function getApiKey() { try { return localStorage.getItem('isd:apikey') || ''; } catch(e) { return ''; } }
+function setApiKey(k) { try { localStorage.setItem('isd:apikey', k); } catch(e) {} }
+
+async function loadAll() {
+  const opps = lsGet('isd:opportunities');
+  state.opportunities = opps || DEFAULT_OPPORTUNITIES;
+  if (!opps) saveOpportunities();
+  const pip = lsGet('isd:pipeline');
+  state.pipeline = pip || DEFAULT_PIPELINE;
+  if (!pip) savePipeline();
+  const funders = lsGet('isd:funders');
+  state.funders = funders || DEFAULT_FUNDERS;
+  if (!funders) saveFunders();
+  state.lastSync = lsGet('isd:lastsync');
+  updateSyncInfo();
+  renderAll();
+}
+async function saveOpportunities() { lsSet('isd:opportunities', state.opportunities); }
+async function savePipeline() { lsSet('isd:pipeline', state.pipeline); }
+async function saveFunders() { lsSet('isd:funders', state.funders); }
+
+function genId() { return 'id-' + Math.random().toString(36).slice(2,10); }
+function updateSyncInfo() {
+  const el = document.getElementById('sync-info');
+  if (state.lastSync) { el.textContent = 'Last scan: ' + new Date(state.lastSync).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+  else { el.textContent = 'No scan yet'; }
+}
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+function switchTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.htab').forEach((el,i) => {
+    const tabs = ['overview','opportunities','pipeline','calendar','funders'];
+    el.classList.toggle('active', tabs[i] === tab);
+  });
+  if (tab === 'overview') { renderOverview(); }
+  if (tab === 'opportunities') renderOpportunities();
+  if (tab === 'pipeline') renderPipeline();
+  if (tab === 'calendar') renderCalendar();
+  if (tab === 'funders') renderFunders();
+}
+
+function renderAll() { renderOverview(); renderOpportunities(); updateOppCountBadge(); }
+
+// ══════════════════════════════════════════
+//  OVERVIEW
+// ══════════════════════════════════════════
+function renderOverview() {
+  // KPIs
+  const totalBudget = state.pipeline.reduce((s,p) => s + (Number(p.budget)||0), 0);
+  const activePip = state.pipeline.filter(p => !['approved','rejected'].includes(p.stage)).length;
+  const highOpp = state.opportunities.filter(o => o.fit === 'high' && o.status !== 'no-go').length;
+  const urgent = [...state.pipeline,...state.opportunities].filter(x => URGENT(x.deadline) && !OVERDUE(x.deadline)).length;
+  const overdue = [...state.pipeline,...state.opportunities].filter(x => OVERDUE(x.deadline)).length;
+
+  document.getElementById('kpi-row').innerHTML = `
+    <div class="kpi"><div class="kpi-label">Active Pipeline</div><div class="kpi-value">${activePip}</div><div class="kpi-sub">${state.pipeline.length} total proposals</div></div>
+    <div class="kpi"><div class="kpi-label">Pipeline Value</div><div class="kpi-value" style="font-size:24px;">${'€' + (totalBudget/1000).toFixed(0) + 'k'}</div><div class="kpi-sub">Across all stages</div><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100, activePip/10*100)}%"></div></div></div>
+    <div class="kpi blue"><div class="kpi-label">High-Fit Opportunities</div><div class="kpi-value" style="color:var(--blue);">${highOpp}</div><div class="kpi-sub">${state.opportunities.length} total tracked</div></div>
+    <div class="kpi ${overdue>0?'red':'green'}"><div class="kpi-label">Deadlines</div><div class="kpi-value" style="color:${overdue>0?'var(--red)':'var(--green)'};">${urgent}</div><div class="kpi-sub">${overdue > 0 ? overdue + ' overdue ⚠' : 'In next 14 days'}</div></div>
+  `;
+
+  // Alert banner
+  const urgentItems = [...state.pipeline,...state.opportunities]
+    .filter(x => URGENT(x.deadline))
+    .sort((a,b) => new Date(a.deadline) - new Date(b.deadline))
+    .slice(0,3);
+  let alertHTML = '';
+  if (urgentItems.length > 0) {
+    alertHTML = `<div class="alert-banner"><span class="alert-icon">⚠</span><div class="alert-text"><strong>Upcoming Deadlines:</strong> ` +
+      urgentItems.map(x => `<strong>${x.name.split('–')[0].split('–')[0].slice(0,40).trim()}</strong> — ${FMT(x.deadline)} (${DAYS_UNTIL(x.deadline)} days)`).join(' · ') + `</div></div>`;
+  }
+  document.getElementById('alert-area').innerHTML = alertHTML;
+
+  // Overview pipeline mini-list
+  const pipItems = state.pipeline
+    .filter(p => ['drafting','submitted','scoping'].includes(p.stage))
+    .sort((a,b) => (a.deadline||'9999') < (b.deadline||'9999') ? -1 : 1)
+    .slice(0,6);
+  document.getElementById('overview-pipeline').innerHTML = pipItems.length ? pipItems.map(p => `
+    <div class="mini-item" onclick="selectItem('pipeline','${p.id}')">
+      <div class="mini-dot" style="background:${stageColor(p.stage)}"></div>
+      <div class="mini-name">${p.name.slice(0,45)}${p.name.length>45?'…':''}</div>
+      <div class="mini-right">
+        <div class="mini-date ${URGENT(p.deadline)?'urgent':''}">${p.deadline ? FMT_SHORT(p.deadline) : '–'}</div>
+        <div class="mini-meta">${stageBadge(p.stage)}</div>
+      </div>
+    </div>`).join('') : '<p style="color:var(--muted);font-size:12.5px;padding:8px 0;">No active proposals yet.</p>';
+
+  // Overview opps mini-list
+  const oppItems = state.opportunities
+    .filter(o => o.fit === 'high' && o.status !== 'no-go')
+    .sort((a,b) => (a.deadline||'9999') < (b.deadline||'9999') ? -1 : 1)
+    .slice(0,6);
+  document.getElementById('overview-opps').innerHTML = oppItems.length ? oppItems.map(o => `
+    <div class="mini-item" onclick="selectItem('opportunities','${o.id}')">
+      <div class="mini-dot" style="background:var(--green)"></div>
+      <div class="mini-name">${o.name.slice(0,42)}${o.name.length>42?'…':''}</div>
+      <div class="mini-right">
+        <div class="mini-date ${URGENT(o.deadline)?'urgent':''}">${o.deadline ? FMT_SHORT(o.deadline) : 'Rolling'}</div>
+        <div class="mini-meta">${o.funder.slice(0,15)}</div>
+      </div>
+    </div>`).join('') : '<p style="color:var(--muted);font-size:12.5px;padding:8px 0;">No high-fit opportunities found. Run an AI Scan!</p>';
+
+  // Render analytics charts (deferred slightly so DOM is ready)
+  setTimeout(renderCharts, 50);
+}
+
+// ══════════════════════════════════════════
+//  OPPORTUNITIES
+// ══════════════════════════════════════════
+function renderOpportunities() {
+  const q = (document.getElementById('opp-search')||{value:''}).value.toLowerCase();
+  const ft = (document.getElementById('opp-filt-type')||{value:''}).value;
+  const ff = (document.getElementById('opp-filt-fit')||{value:''}).value;
+  const fs = (document.getElementById('opp-filt-status')||{value:''}).value;
+
+  let data = state.opportunities.filter(o =>
+    (!q || [o.name,o.funder,o.theme,o.instrument].some(f => (f||'').toLowerCase().includes(q))) &&
+    (!ft || o.funderType === ft) &&
+    (!ff || o.fit === ff) &&
+    (!fs || o.status === fs)
+  );
+
+  const sf = state.sortField.opportunities;
+  const sd = state.sortDir.opportunities;
+  if (sf) data.sort((a,b) => {
+    let av = a[sf]||'', bv = b[sf]||'';
+    if (sf === 'maxGrant') { av = Number(av)||0; bv = Number(bv)||0; }
+    return sd === 'asc' ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+  });
+
+  const tbody = document.getElementById('opp-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = data.length ? data.map(o => `
+    <tr onclick="selectItem('opportunities','${o.id}')" class="${state.selectedItem===o.id?'selected':''}">
+      <td><span class="fit-dot fit-dot-${o.fit}"></span> <span class="badge badge-${o.fit}" style="font-size:10px;">${o.fit}</span></td>
+      <td><strong style="font-size:13px;">${o.name}</strong>${o.leadPossible==='yes'?' <span style="font-size:10px;color:var(--accent);">★ Lead</span>':''}<br>${o.abstract?`<span style="font-size:11px;color:var(--muted);line-height:1.4;display:block;margin-top:2px;">${o.abstract.slice(0,110)}${o.abstract.length>110?'…':''}</span>`:''}</td>
+      <td>${o.funder}</td>
+      <td class="muted" style="font-size:11.5px;">${funderTypeLabel(o.funderType)}</td>
+      <td class="mono ${URGENT(o.deadline)?'':''}" style="color:${OVERDUE(o.deadline)?'var(--red)':URGENT(o.deadline)?'var(--orange)':'var(--muted)'}">${o.deadline ? FMT(o.deadline) : 'Rolling'}</td>
+      <td class="mono" style="color:var(--accent);">${FMTM(o.maxGrant)}</td>
+      <td>${statusBadge(o.status)}</td>
+    </tr>`).join('') : `<tr><td colspan="7" class="tbl-empty">No opportunities match your filters.</td></tr>`;
+
+  updateOppCountBadge();
+}
+
+function updateOppCountBadge() {
+  const el = document.getElementById('opp-count-badge');
+  if (el) { const n = state.opportunities.filter(o => o.status === 'new' || o.isNew).length; el.textContent = n > 0 ? n : ''; el.style.display = n > 0 ? '' : 'none'; }
+}
+
+// ══════════════════════════════════════════
+//  PIPELINE
+// ══════════════════════════════════════════
+const STAGES = ['idea','scoping','drafting','submitted','approved','rejected'];
+function renderPipeline() {
+  renderStageSummary();
+  if (state.pipView === 'kanban') renderKanban();
+  else renderPipelineList();
+}
+
+function renderStageSummary() {
+  const el = document.getElementById('pip-stage-summary');
+  el.innerHTML = STAGES.map(s => {
+    const count = state.pipeline.filter(p => p.stage === s).length;
+    return `<div class="stage-seg ${count>0?'filled':''}" style="border-top:3px solid ${stageColor(s)};">
+      <span class="stage-count">${count}</span>
+      ${s.charAt(0).toUpperCase()+s.slice(1)}
+    </div>`;
+  }).join('');
+}
+
+function renderKanban() {
+  const el = document.getElementById('pip-kanban');
+  el.innerHTML = STAGES.map(s => {
+    const items = state.pipeline.filter(p => p.stage === s);
+    return `<div class="k-col">
+      <div class="k-header" style="border-top:3px solid ${stageColor(s)};">
+        <span class="k-stage-name" style="color:${stageColor(s)};">${s}</span>
+        <span class="k-count">${items.length}</span>
+      </div>
+      <div class="k-body">
+        ${items.length ? items.map(p => `
+          <div class="k-card" onclick="selectItem('pipeline','${p.id}')">
+            <div class="k-card-name">${p.name.slice(0,50)}${p.name.length>50?'…':''}</div>
+            <div class="k-card-funder">${p.funder}</div>
+            <div class="k-card-meta">
+              <span class="k-card-budget">${p.budget ? '€'+(Number(p.budget)/1000).toFixed(0)+'k' : '–'}</span>
+              <span class="k-card-deadline ${URGENT(p.deadline)?'urgent':''}">${p.deadline ? FMT_SHORT(p.deadline) : '–'}</span>
+            </div>
+          </div>`).join('') : `<div style="color:var(--faint);font-size:12px;padding:10px 4px;text-align:center;">Empty</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPipelineList() {
+  const q = (document.getElementById('pip-search')||{value:''}).value.toLowerCase();
+  const fs = (document.getElementById('pip-filt-stage')||{value:''}).value;
+  let data = state.pipeline.filter(p =>
+    (!q || [p.name,p.funder,p.theme].some(f=>(f||'').toLowerCase().includes(q))) &&
+    (!fs || p.stage === fs)
+  );
+  const sf = state.sortField.pipeline;
+  const sd = state.sortDir.pipeline;
+  if (sf) data.sort((a,b) => { let av=a[sf]||'',bv=b[sf]||''; return sd==='asc'?(av>bv?1:-1):(av<bv?1:-1); });
+  const tbody = document.getElementById('pip-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = data.length ? data.map(p => `
+    <tr onclick="selectItem('pipeline','${p.id}')" class="${state.selectedItem===p.id?'selected':''}">
+      <td><strong>${p.name.slice(0,45)}${p.name.length>45?'…':''}</strong></td>
+      <td class="muted">${p.funder}</td>
+      <td>${stageBadge(p.stage)}</td>
+      <td class="mono" style="color:${OVERDUE(p.deadline)?'var(--red)':URGENT(p.deadline)?'var(--orange)':'var(--muted)'}">${p.deadline?FMT(p.deadline):'–'}</td>
+      <td class="mono" style="color:var(--accent);">${FMTM(p.budget)}</td>
+      <td class="muted" style="font-size:12px;">${p.theme||'–'}</td>
+      <td class="muted" style="font-size:12px;">${p.role||'–'}</td>
+    </tr>`).join('') : `<tr><td colspan="7" class="tbl-empty">No proposals yet. Add one above!</td></tr>`;
+}
+
+function togglePipelineView() {
+  state.pipView = state.pipView === 'kanban' ? 'list' : 'kanban';
+  document.getElementById('pip-kanban').style.display = state.pipView === 'kanban' ? 'flex' : 'none';
+  document.getElementById('pip-list').style.display = state.pipView === 'list' ? 'block' : 'none';
+  document.getElementById('pip-view-toggle').textContent = state.pipView === 'kanban' ? '≡ List View' : '⬛ Kanban';
+  if (state.pipView === 'list') renderPipelineList();
+  else renderKanban();
+}
+
+// ══════════════════════════════════════════
+//  CALENDAR
+// ══════════════════════════════════════════
+function renderCalendar() {
+  const wrap = document.getElementById('calendar-wrap');
+  const start = new Date(TODAY);
+  start.setDate(start.getDate() - start.getDay() + 1); // Monday
+  const days = Array.from({length:28}, (_,i) => { const d = new Date(start); d.setDate(d.getDate()+i); return d; });
+
+  // Collect events
+  const events = [];
+  state.pipeline.forEach(p => {
+    if (p.deadline) events.push({ date: p.deadline, label: p.name.split('–')[0].slice(0,30), type: 'submission', id: p.id, itemType: 'pipeline' });
+  });
+  state.opportunities.forEach(o => {
+    if (o.deadline && o.status !== 'no-go') events.push({ date: o.deadline, label: o.name.split('–')[0].slice(0,30), type: 'submission', id: o.id, itemType: 'opportunities' });
+  });
+
+  // Day label header
+  const dayHeaders = days.map((d,i) => {
+    const isToday = d.toDateString() === TODAY.toDateString();
+    const isWknd = d.getDay() === 0 || d.getDay() === 6;
+    return `<div class="cal-day ${isToday?'today':''} ${isWknd?'weekend':''}">${d.toLocaleDateString('de-DE',{weekday:'narrow',day:'numeric'})}</div>`;
+  }).join('');
+
+  // Build rows: one per category
+  const rows = [
+    { label: '📋 Pipeline', types: ['submission'], sources: state.pipeline.map(p => ({date:p.deadline,label:p.name.slice(0,25),type:'submission',id:p.id,itemType:'pipeline'})) },
+    { label: '📡 Opps', types: ['submission'], sources: state.opportunities.filter(o=>o.status!=='no-go').map(o => ({date:o.deadline,label:o.name.slice(0,25),type:'submission',id:o.id,itemType:'opportunities'})) }
+  ];
+
+  const calRows = rows.map(row => {
+    const cells = days.map(d => {
+      const dStr = d.toISOString().slice(0,10);
+      const isToday = d.toDateString() === TODAY.toDateString();
+      const dayEvents = row.sources.filter(e => e.date === dStr);
+      const eventHtml = dayEvents.map(e => `<div class="cal-event ${e.type}" onclick="selectItem('${e.itemType}','${e.id}');event.stopPropagation();" title="${e.label}">${e.label}</div>`).join('');
+      return `<div class="cal-cell ${isToday?'today':''}" style="position:relative;">${eventHtml}</div>`;
+    }).join('');
+    return `<div class="cal-row"><div class="cal-row-label">${row.label}</div>${cells}</div>`;
+  }).join('');
+
+  wrap.innerHTML = `<div class="calendar-wrap">
+    <div class="cal-header"><div class="cal-label">Week →</div>${dayHeaders}</div>
+    ${calRows}
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+//  FUNDERS
+// ══════════════════════════════════════════
+function renderFunders() {
+  const data = state.funders.filter(f => !state.funderFilter || f.type === state.funderFilter);
+  const grid = document.getElementById('funders-grid');
+  grid.innerHTML = data.map(f => `
+    <div class="funder-card ${state.selectedItem===f.id?'selected':''}" onclick="selectItem('funders','${f.id}')">
+      <div class="funder-top">
+        <div class="funder-name">${f.name}</div>
+        <div class="funder-type-tag">${funderTypeLabel(f.type)}</div>
+      </div>
+      <div class="funder-contact" style="font-size:11.5px;">👤 ${f.contact||'–'}</div>
+      <div class="funder-projects" style="font-size:12px;">${(f.projects||'–').slice(0,70)}${(f.projects||'').length>70?'…':''}</div>
+      <div class="funder-footer">
+        ${relBadge(f.rel)}
+        <span class="funder-last">Last: ${f.lastInteraction ? FMT(f.lastInteraction) : '–'}</span>
+      </div>
+    </div>`).join('') || '<div class="empty-state"><div class="big-icon">🏛</div><p>No funders yet.</p></div>';
+}
+
+function filterFunders(type) {
+  state.funderFilter = type;
+  document.querySelectorAll('[id^="ff-"]').forEach(b => b.style.background = '');
+  const active = document.getElementById('ff-' + (type || 'all'));
+  if (active) active.style.background = 'var(--accent-glow)';
+  renderFunders();
+}
+
+// ══════════════════════════════════════════
+//  DETAIL PANEL
+// ══════════════════════════════════════════
+function selectItem(type, id) {
+  const item = state[type].find(x => x.id === id);
+  if (!item) return;
+  state.selectedItem = id;
+  state.selectedType = type;
+  document.getElementById('detail-panel').classList.add('open');
+
+  let html = '';
+  if (type === 'opportunities') {
+    html = `
+      <div class="dp-type">Funding Opportunity</div>
+      <div class="dp-name">${item.name}</div>
+      <div class="dp-funder">${item.funder} · ${funderTypeLabel(item.funderType)}</div>
+      <div class="dp-row">
+        <span class="badge badge-${item.fit}">Fit: ${item.fit}</span>
+        ${statusBadge(item.status)}
+        ${item.leadPossible==='yes' ? '<span class="badge" style="background:var(--accent-glow);color:var(--accent);">★ ISD Lead</span>' : ''}
+      </div>
+      <div class="dp-meta-grid">
+        <div class="dp-meta-item"><div class="dp-meta-label">Deadline</div><div class="dp-meta-value ${URGENT(item.deadline)?'':'accent'}" style="color:${OVERDUE(item.deadline)?'var(--red)':URGENT(item.deadline)?'var(--orange)':'var(--text)'};">${item.deadline ? FMT(item.deadline) + ' (' + DAYS_UNTIL(item.deadline) + 'd)' : 'Rolling'}</div></div>
+        <div class="dp-meta-item"><div class="dp-meta-label">Max Grant</div><div class="dp-meta-value accent">${FMTM(item.maxGrant)}</div></div>
+        <div class="dp-meta-item"><div class="dp-meta-label">Instrument</div><div class="dp-meta-value">${item.instrument||'–'}</div></div>
+        <div class="dp-meta-item"><div class="dp-meta-label">Theme</div><div class="dp-meta-value">${item.theme||'–'}</div></div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Call Abstract</div>
+        <div class="dp-field" style="font-size:12.5px;line-height:1.65;">${item.abstract||'<span style="color:var(--muted);">No abstract yet — click Edit to add a 2–3 sentence call summary.</span>'}</div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Notes & ISD Angle</div>
+        <div class="dp-field">${item.notes||'No notes yet.'}</div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Potential Partners</div>
+        <div class="dp-field">${item.partners||'–'}</div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Next Steps</div>
+        <textarea class="dp-notes-area" id="dp-nextsteps" placeholder="Add next steps…" onchange="updateNextSteps('${id}','opportunities',this.value)">${item.nextSteps||''}</textarea>
+      </div>
+      ${item.link ? `<div style="margin-bottom:12px;"><a href="${item.link}" target="_blank" rel="noopener" style="color:var(--accent);font-size:12px;">🔗 Open Call Page ↗</a></div>` : ''}
+      <div class="dp-actions">
+        <button class="dp-btn" onclick="openEditOppModal('${id}')">Edit</button>
+        <button class="dp-btn primary" onclick="setOppStatus('${id}','go')">✓ Go</button>
+        <button class="dp-btn danger" onclick="deleteItem('opportunities','${id}')">Delete</button>
+      </div>`;
+  } else if (type === 'pipeline') {
+    html = `
+      <div class="dp-type">Proposal</div>
+      <div class="dp-name">${item.name}</div>
+      <div class="dp-funder">${item.funder}</div>
+      <div class="dp-row">
+        ${stageBadge(item.stage)}
+        <span class="badge" style="background:var(--faint);color:var(--muted);">${item.role||'Lead'}</span>
+      </div>
+      <div class="dp-meta-grid">
+        <div class="dp-meta-item"><div class="dp-meta-label">Deadline</div><div class="dp-meta-value" style="color:${OVERDUE(item.deadline)?'var(--red)':URGENT(item.deadline)?'var(--orange)':'var(--text)'};">${item.deadline ? FMT(item.deadline) + ' (' + DAYS_UNTIL(item.deadline) + 'd)' : '–'}</div></div>
+        <div class="dp-meta-item"><div class="dp-meta-label">Budget</div><div class="dp-meta-value accent">${FMTM(item.budget)}</div></div>
+        <div class="dp-meta-item"><div class="dp-meta-label">Theme</div><div class="dp-meta-value">${item.theme||'–'}</div></div>
+        <div class="dp-meta-item"><div class="dp-meta-label">Call Ref</div><div class="dp-meta-value" style="font-size:11.5px;">${item.callRef||'–'}</div></div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Partners</div>
+        <div class="dp-field">${item.partners||'–'}</div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Move to Stage</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${STAGES.map(s => `<button onclick="moveStage('${id}','${s}')" style="padding:4px 9px;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid ${stageColor(s)}33;background:${item.stage===s?stageColor(s)+'22':'transparent'};color:${stageColor(s)};" >${s}</button>`).join('')}
+        </div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Notes</div>
+        <textarea class="dp-notes-area" id="dp-pip-notes" placeholder="Add notes…" onchange="updatePipNotes('${id}',this.value)">${item.notes||''}</textarea>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Next Steps</div>
+        <textarea class="dp-notes-area" id="dp-pip-nextsteps" placeholder="Next steps…" style="min-height:60px;" onchange="updateNextStepsPip('${id}',this.value)">${item.nextSteps||''}</textarea>
+      </div>
+      <div class="dp-actions">
+        <button class="dp-btn" onclick="openEditPipModal('${id}')">Edit</button>
+        <button class="dp-btn danger" onclick="deleteItem('pipeline','${id}')">Delete</button>
+      </div>`;
+  } else if (type === 'funders') {
+    html = `
+      <div class="dp-type">Funder</div>
+      <div class="dp-name">${item.name}</div>
+      <div class="dp-funder">${funderTypeLabel(item.type)}</div>
+      <div class="dp-row">${relBadge(item.rel)}</div>
+      <div class="dp-meta-grid">
+        <div class="dp-meta-item" style="grid-column:span 2;"><div class="dp-meta-label">Key Contact</div><div class="dp-meta-value">${item.contact||'–'}</div></div>
+        <div class="dp-meta-item"><div class="dp-meta-label">Last Interaction</div><div class="dp-meta-value">${item.lastInteraction ? FMT(item.lastInteraction) : '–'}</div></div>
+        <div class="dp-meta-item"><div class="dp-meta-label">Relationship</div><div class="dp-meta-value">${item.rel||'–'}</div></div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Current / Past Projects</div>
+        <div class="dp-field">${item.projects||'–'}</div>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Next Action</div>
+        <textarea class="dp-notes-area" placeholder="Next action…" style="min-height:60px;" onchange="updateFunderAction('${id}',this.value)">${item.nextAction||''}</textarea>
+      </div>
+      <div class="dp-section">
+        <div class="dp-section-title">Notes</div>
+        <textarea class="dp-notes-area" placeholder="Notes on funder…" onchange="updateFunderNotes('${id}',this.value)">${item.notes||''}</textarea>
+      </div>
+      <div class="dp-actions">
+        <button class="dp-btn" onclick="openEditFunderModal('${id}')">Edit</button>
+        <button class="dp-btn danger" onclick="deleteItem('funders','${id}')">Delete</button>
+      </div>`;
+  }
+  document.getElementById('detail-content').innerHTML = html;
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  state.selectedItem = null; state.selectedType = null;
+}
+
+async function updateNextSteps(id, type, val) { const item = state[type].find(x=>x.id===id); if(item){ item.nextSteps=val; await saveOpportunities(); } }
+async function updateNextStepsPip(id, val) { const item = state.pipeline.find(x=>x.id===id); if(item){ item.nextSteps=val; await savePipeline(); } }
+async function updatePipNotes(id, val) { const item = state.pipeline.find(x=>x.id===id); if(item){ item.notes=val; await savePipeline(); } }
+async function updateFunderNotes(id, val) { const item = state.funders.find(x=>x.id===id); if(item){ item.notes=val; await saveFunders(); } }
+async function updateFunderAction(id, val) { const item = state.funders.find(x=>x.id===id); if(item){ item.nextAction=val; await saveFunders(); } }
+async function moveStage(id, stage) { const item = state.pipeline.find(x=>x.id===id); if(item){ item.stage=stage; await savePipeline(); renderPipeline(); selectItem('pipeline',id); renderOverview(); } }
+async function setOppStatus(id, status) { const item = state.opportunities.find(x=>x.id===id); if(item){ item.status=status; await saveOpportunities(); renderOpportunities(); selectItem('opportunities',id); renderOverview(); } }
+async function deleteItem(type, id) {
+  if (!confirm('Delete this item?')) return;
+  state[type] = state[type].filter(x => x.id !== id);
+  if(type==='opportunities') await saveOpportunities();
+  else if(type==='pipeline') await savePipeline();
+  else if(type==='funders') await saveFunders();
+  closeDetail(); renderAll();
+  if(type==='pipeline') renderPipeline();
+  if(type==='funders') renderFunders();
+}
+
+// ══════════════════════════════════════════
+//  SORT
+// ══════════════════════════════════════════
+function sortTable(table, field) {
+  if (state.sortField[table] === field) { state.sortDir[table] = state.sortDir[table] === 'asc' ? 'desc' : 'asc'; }
+  else { state.sortField[table] = field; state.sortDir[table] = 'asc'; }
+  if (table === 'opportunities') renderOpportunities();
+  if (table === 'pipeline') renderPipelineList();
+}
+
+// ══════════════════════════════════════════
+//  MODALS — OPP
+// ══════════════════════════════════════════
+function openAddOppModal() { state.editingId = null; document.getElementById('modal-opp-title').textContent = 'Add Funding Opportunity'; clearOppForm(); document.getElementById('modal-opp').classList.remove('hidden'); }
+function openEditOppModal(id) {
+  state.editingId = id;
+  const o = state.opportunities.find(x => x.id === id);
+  if (!o) return;
+  document.getElementById('modal-opp-title').textContent = 'Edit Opportunity';
+  document.getElementById('f-opp-name').value = o.name||'';
+  document.getElementById('f-opp-funder').value = o.funder||'';
+  document.getElementById('f-opp-funder-type').value = o.funderType||'eu-institution';
+  document.getElementById('f-opp-instrument').value = o.instrument||'';
+  document.getElementById('f-opp-theme').value = o.theme||'';
+  document.getElementById('f-opp-fit').value = o.fit||'medium';
+  document.getElementById('f-opp-deadline').value = o.deadline||'';
+  document.getElementById('f-opp-grant').value = o.maxGrant||'';
+  document.getElementById('f-opp-lead').value = o.leadPossible||'yes';
+  document.getElementById('f-opp-status').value = o.status||'new';
+  document.getElementById('f-opp-link').value = o.link||'';
+  document.getElementById('f-opp-abstract').value = o.abstract||'';
+  document.getElementById('f-opp-notes').value = o.notes||'';
+  document.getElementById('f-opp-partners').value = o.partners||'';
+  document.getElementById('f-opp-nextsteps').value = o.nextSteps||'';
+  document.getElementById('modal-opp').classList.remove('hidden');
+}
+function clearOppForm() { ['f-opp-name','f-opp-funder','f-opp-instrument','f-opp-theme','f-opp-deadline','f-opp-grant','f-opp-link','f-opp-abstract','f-opp-notes','f-opp-partners','f-opp-nextsteps'].forEach(id => document.getElementById(id).value = ''); }
+async function saveOpp() {
+  const n = document.getElementById('f-opp-name').value.trim();
+  if (!n) { alert('Please enter a call name.'); return; }
+  const obj = {
+    id: state.editingId || genId(), name: n,
+    funder: document.getElementById('f-opp-funder').value.trim(),
+    funderType: document.getElementById('f-opp-funder-type').value,
+    instrument: document.getElementById('f-opp-instrument').value.trim(),
+    theme: document.getElementById('f-opp-theme').value.trim(),
+    fit: document.getElementById('f-opp-fit').value,
+    deadline: document.getElementById('f-opp-deadline').value || null,
+    maxGrant: document.getElementById('f-opp-grant').value || null,
+    leadPossible: document.getElementById('f-opp-lead').value,
+    status: document.getElementById('f-opp-status').value,
+    link: document.getElementById('f-opp-link').value.trim(),
+    abstract: document.getElementById('f-opp-abstract').value.trim(),
+    notes: document.getElementById('f-opp-notes').value.trim(),
+    partners: document.getElementById('f-opp-partners').value.trim(),
+    nextSteps: document.getElementById('f-opp-nextsteps').value.trim()
+  };
+  if (state.editingId) { const i = state.opportunities.findIndex(x=>x.id===state.editingId); state.opportunities[i] = obj; }
+  else { state.opportunities.unshift(obj); }
+  await saveOpportunities();
+  closeModal('modal-opp');
+  renderOpportunities(); renderOverview();
+  if (obj.id) selectItem('opportunities', obj.id);
+}
+
+// ══════════════════════════════════════════
+//  MODALS — PIPELINE
+// ══════════════════════════════════════════
+function openAddPipModal() { state.editingId = null; document.getElementById('modal-pip-title').textContent = 'Add Proposal'; clearPipForm(); document.getElementById('modal-pip').classList.remove('hidden'); }
+function openEditPipModal(id) {
+  state.editingId = id;
+  const p = state.pipeline.find(x=>x.id===id);
+  if (!p) return;
+  document.getElementById('modal-pip-title').textContent = 'Edit Proposal';
+  document.getElementById('f-pip-name').value = p.name||'';
+  document.getElementById('f-pip-funder').value = p.funder||'';
+  document.getElementById('f-pip-funder-type').value = p.funderType||'german-ministry';
+  document.getElementById('f-pip-stage').value = p.stage||'idea';
+  document.getElementById('f-pip-deadline').value = p.deadline||'';
+  document.getElementById('f-pip-budget').value = p.budget||'';
+  document.getElementById('f-pip-role').value = p.role||'Lead';
+  document.getElementById('f-pip-theme').value = p.theme||'';
+  document.getElementById('f-pip-callref').value = p.callRef||'';
+  document.getElementById('f-pip-partners').value = p.partners||'';
+  document.getElementById('f-pip-notes').value = p.notes||'';
+  document.getElementById('f-pip-nextsteps').value = p.nextSteps||'';
+  document.getElementById('modal-pip').classList.remove('hidden');
+}
+function clearPipForm() { ['f-pip-name','f-pip-funder','f-pip-deadline','f-pip-budget','f-pip-theme','f-pip-callref','f-pip-partners','f-pip-notes','f-pip-nextsteps'].forEach(id => document.getElementById(id).value = ''); }
+async function savePip() {
+  const n = document.getElementById('f-pip-name').value.trim();
+  if (!n) { alert('Please enter a project name.'); return; }
+  const obj = {
+    id: state.editingId || genId(), name: n,
+    funder: document.getElementById('f-pip-funder').value.trim(),
+    funderType: document.getElementById('f-pip-funder-type').value,
+    stage: document.getElementById('f-pip-stage').value,
+    deadline: document.getElementById('f-pip-deadline').value || null,
+    budget: document.getElementById('f-pip-budget').value || null,
+    role: document.getElementById('f-pip-role').value,
+    theme: document.getElementById('f-pip-theme').value.trim(),
+    callRef: document.getElementById('f-pip-callref').value.trim(),
+    partners: document.getElementById('f-pip-partners').value.trim(),
+    notes: document.getElementById('f-pip-notes').value.trim(),
+    nextSteps: document.getElementById('f-pip-nextsteps').value.trim()
+  };
+  if (state.editingId) { const i = state.pipeline.findIndex(x=>x.id===state.editingId); state.pipeline[i] = obj; }
+  else { state.pipeline.unshift(obj); }
+  await savePipeline();
+  closeModal('modal-pip');
+  renderPipeline(); renderOverview();
+  selectItem('pipeline', obj.id);
+}
+
+// ══════════════════════════════════════════
+//  MODALS — FUNDER
+// ══════════════════════════════════════════
+function openAddFunderModal() { state.editingId = null; document.getElementById('modal-funder').classList.remove('hidden'); }
+function openEditFunderModal(id) {
+  state.editingId = id;
+  const f = state.funders.find(x=>x.id===id);
+  if (!f) return;
+  document.getElementById('f-fn-name').value = f.name||'';
+  document.getElementById('f-fn-type').value = f.type||'german-ministry';
+  document.getElementById('f-fn-rel').value = f.rel||'cold';
+  document.getElementById('f-fn-contact').value = f.contact||'';
+  document.getElementById('f-fn-last').value = f.lastInteraction||'';
+  document.getElementById('f-fn-projects').value = f.projects||'';
+  document.getElementById('f-fn-nextaction').value = f.nextAction||'';
+  document.getElementById('f-fn-notes').value = f.notes||'';
+  document.getElementById('modal-funder').classList.remove('hidden');
+}
+async function saveFunder() {
+  const n = document.getElementById('f-fn-name').value.trim();
+  if (!n) { alert('Funder name required.'); return; }
+  const obj = {
+    id: state.editingId || genId(), name: n,
+    type: document.getElementById('f-fn-type').value,
+    rel: document.getElementById('f-fn-rel').value,
+    contact: document.getElementById('f-fn-contact').value.trim(),
+    lastInteraction: document.getElementById('f-fn-last').value || null,
+    projects: document.getElementById('f-fn-projects').value.trim(),
+    nextAction: document.getElementById('f-fn-nextaction').value.trim(),
+    notes: document.getElementById('f-fn-notes').value.trim()
+  };
+  if (state.editingId) { const i = state.funders.findIndex(x=>x.id===state.editingId); state.funders[i] = obj; }
+  else { state.funders.unshift(obj); }
+  await saveFunders();
+  closeModal('modal-funder');
+  renderFunders();
+  selectItem('funders', obj.id);
+}
+
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click', e => { if (e.target === el) el.classList.add('hidden'); }));
+
+// ══════════════════════════════════════════
+//  AI SCAN — clipboard workflow
+// ══════════════════════════════════════════
+function runAIScan() {
+  const existingNames = state.opportunities.map(o => o.name).join('\n- ');
+  const prompt = `You are a funding intelligence analyst for ISD Germany (Institut für Strategischen Dialog, gGmbH, Berlin). ISD Germany works on: disinformation/FIMI, extremism prevention, digital policy/DSA platform accountability, democratic resilience, hate speech, online antisemitism, media literacy, strategic communications, municipal capacity building. Active programmes: BC4D, Digital Policy Lab, INFORMED/UCPM, AHEAD.Tech, CCOA.
+
+Search for currently OPEN or UPCOMING funding calls (2025-2026) highly relevant to ISD Germany from: German federal ministries (BMBFSFJ/Demokratie Leben, BMBF, BMI, AA, BKM), German foundations (Mercator, Landecker, Zeit Stiftung, Bosch, Hertie, Postcode Lotterie), EU institutions (CERV, ISF, Horizon Europe, Digital Europe, DG CONNECT, DG HOME, DG JUST, EEAS), Council of Europe, OSCE, Google.org, Microsoft.
+
+Today is ${TODAY.toISOString().slice(0,10)}.
+
+ALREADY TRACKED (do not include these):
+- ${existingNames}
+
+Return ONLY a valid JSON array of up to 6 NEW opportunities not already in the list above. No markdown, no explanation, just the raw JSON array:
+[{"name":"...","funder":"...","funderType":"german-ministry|eu-institution|multilateral|private","instrument":"...","theme":"...","fit":"high|medium","deadline":"YYYY-MM-DD or null","maxGrant":150000,"leadPossible":"yes|consortium|no","status":"new","link":"direct call URL or null","abstract":"2-3 sentence factual summary of what this call funds, who can apply, and the funding range.","notes":"Why relevant for ISD Germany and what angle to take.","partners":"Suggested partners","nextSteps":"Immediate next action"}]`;
+
+  document.getElementById('scan-prompt-box').textContent = prompt;
+  document.getElementById('scan-paste-area').value = '';
+  document.getElementById('scan-copy-btn').textContent = '⎘ Copy Prompt';
+  document.getElementById('scan-copy-btn').className = 'cw-copy-btn';
+  document.getElementById('modal-scan').classList.remove('hidden');
+}
+
+function copyScanPrompt() {
+  const text = document.getElementById('scan-prompt-box').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('scan-copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.className = 'cw-copy-btn copied';
+    setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; btn.className = 'cw-copy-btn'; }, 2500);
+  });
+}
+
+async function importScanResults() {
+  const raw = document.getElementById('scan-paste-area').value.trim();
+  if (!raw) { alert('Please paste Claude\'s response first.'); return; }
+  const match = raw.match(/\[[\s\S]*\]/);
+  if (!match) { alert('Could not find a JSON array in the pasted text. Make sure you copied Claude\'s full response.'); return; }
+  try {
+    const newOpps = JSON.parse(match[0]);
+    let added = 0;
+    newOpps.forEach(o => {
+      const exists = state.opportunities.some(x => x.name.toLowerCase() === (o.name||'').toLowerCase());
+      if (!exists) { o.id = genId(); o.isNew = true; state.opportunities.unshift(o); added++; }
+    });
+    saveOpportunities();
+    state.lastSync = new Date().toISOString();
+    lsSet('isd:lastsync', state.lastSync);
+    updateSyncInfo();
+    renderOpportunities(); renderOverview();
+    closeModal('modal-scan');
+    alert(`✓ ${added} new opportunit${added===1?'y':'ies'} added to your Opportunities tab.`);
+  } catch(e) {
+    alert('JSON parsing failed. Make sure you copied Claude\'s complete response without any extra text before or after the JSON array.');
+  }
+}
+
+// ══════════════════════════════════════════
+//  WEEKLY REPORT — clipboard workflow
+// ══════════════════════════════════════════
+function openReportModal() {
+  const pipSummary = state.pipeline.map(p =>
+    `- ${p.name} | ${p.funder} | Stage: ${p.stage} | Budget: €${p.budget||'TBC'} | Deadline: ${p.deadline||'–'}`
+  ).join('\n');
+  const oppSummary = state.opportunities.filter(o=>o.status!=='no-go').slice(0,10).map(o =>
+    `- ${o.name} | ${o.funder} | Fit: ${o.fit} | Status: ${o.status} | Deadline: ${o.deadline||'Rolling'} | Max: €${o.maxGrant||'TBC'}`
+  ).join('\n');
+  const urgent = [...state.pipeline,...state.opportunities]
+    .filter(x=>URGENT(x.deadline))
+    .map(x=>`- ${x.name} (${FMT(x.deadline)}, ${DAYS_UNTIL(x.deadline)} days)`)
+    .join('\n');
+
+  const prompt = `You are a senior programme manager at ISD Germany (Institut für Strategischen Dialog, Berlin). Write a sharp, professional weekly funding intelligence briefing for Nic Limbourg (Programme Manager, ISD Germany).
+
+Today is ${TODAY.toLocaleDateString('de-DE',{day:'2-digit',month:'long',year:'numeric'})}.
+
+PIPELINE (${state.pipeline.length} proposals):
+${pipSummary}
+
+TOP OPPORTUNITIES (${state.opportunities.filter(o=>o.status!=='no-go').length} tracked):
+${oppSummary}
+
+URGENT DEADLINES (next 14 days):
+${urgent||'None'}
+
+Write the briefing in exactly 5 sections with these headers:
+## EXECUTIVE SUMMARY
+## PIPELINE STATUS
+## PRIORITY OPPORTUNITIES
+## UPCOMING DEADLINES
+## RECOMMENDED ACTIONS THIS WEEK
+
+Be specific, actionable, and concise. Reference actual project names. For Recommended Actions, give exactly 5 numbered concrete steps.`;
+
+  document.getElementById('report-prompt-box').textContent = prompt;
+  document.getElementById('report-paste-area').value = '';
+  document.getElementById('report-copy-btn').textContent = '⎘ Copy Prompt';
+  document.getElementById('report-copy-btn').className = 'cw-copy-btn';
+  document.getElementById('report-prompt-view').style.display = '';
+  document.getElementById('report-result-view').style.display = 'none';
+  document.getElementById('modal-report').classList.remove('hidden');
+}
+
+function copyReportPrompt() {
+  const text = document.getElementById('report-prompt-box').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('report-copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.className = 'cw-copy-btn copied';
+    setTimeout(() => { btn.textContent = '⎘ Copy Prompt'; btn.className = 'cw-copy-btn'; }, 2500);
+  });
+}
+
+function showPastedReport() {
+  const raw = document.getElementById('report-paste-area').value.trim();
+  if (!raw) { alert('Please paste Claude\'s report first.'); return; }
+  state.reportData = raw;
+
+  // Parse sections by ## headers
+  const sections = raw.split(/^##\s+/m).filter(Boolean);
+  const rendered = sections.map(s => {
+    const lines = s.trim().split('\n');
+    const title = lines[0].trim();
+    const body = lines.slice(1).join('\n').trim();
+    return `<div class="report-slide">
+      <div class="report-slide-title">${title}</div>
+      <div class="report-slide-body">${body}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('report-content').innerHTML = rendered || `<div class="report-slide"><div class="report-slide-body">${raw}</div></div>`;
+  document.getElementById('report-prompt-view').style.display = 'none';
+  document.getElementById('report-result-view').style.display = '';
+}
+
+function backToReportPrompt() {
+  document.getElementById('report-prompt-view').style.display = '';
+  document.getElementById('report-result-view').style.display = 'none';
+}
+
+
+function exportReportCSV() {
+  const pipCols = ['name','funder','funderType','stage','deadline','budget','role','theme'];
+  const oppCols = ['name','funder','funderType','fit','status','deadline','maxGrant','leadPossible','theme'];
+  let csv = 'PROPOSAL PIPELINE\n';
+  csv += pipCols.join(',') + '\n';
+  state.pipeline.forEach(p => csv += pipCols.map(c => `"${(p[c]||'').toString().replace(/"/g,'""')}"`).join(',') + '\n');
+  csv += '\nFUNDING OPPORTUNITIES\n';
+  csv += oppCols.join(',') + '\n';
+  state.opportunities.forEach(o => csv += oppCols.map(c => `"${(o[c]||'').toString().replace(/"/g,'""')}"`).join(',') + '\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `ISD_Germany_FundingData_${TODAY.toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+async function exportReportPPTX() {
+  const pptx = new PptxGenJS();
+  pptx.defineLayout({ name: 'LAYOUT_WIDE', width: 13.33, height: 7.5 });
+  pptx.layout = 'LAYOUT_WIDE';
+  pptx.theme = { headFontFace: 'Arial', bodyFontFace: 'Arial' };
+
+  const NAVY = '0b1426'; const AMBER = 'e8a020'; const WHITE = 'dce8f8'; const GRAY = '5e7a9e';
+
+  // Cover slide
+  let slide = pptx.addSlide();
+  slide.background = { color: NAVY };
+  slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 0.3, h: 7.5, fill: { color: AMBER } });
+  slide.addText('ISD GERMANY', { x: 0.6, y: 1.8, w: 8, h: 0.5, fontSize: 14, bold: true, color: AMBER, charSpacing: 8 });
+  slide.addText('Funding Intelligence Report', { x: 0.6, y: 2.4, w: 10, h: 1, fontSize: 32, bold: true, color: WHITE });
+  slide.addText(`Week of ${TODAY.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`, { x: 0.6, y: 3.5, w: 8, h: 0.4, fontSize: 14, color: GRAY });
+  slide.addText(`Pipeline: ${state.pipeline.length} proposals · €${(state.pipeline.reduce((s,p)=>s+(Number(p.budget)||0),0)/1000).toFixed(0)}k total value`, { x: 0.6, y: 4.2, w: 10, h: 0.4, fontSize: 13, color: GRAY });
+
+  // Pipeline summary slide
+  slide = pptx.addSlide();
+  slide.background = { color: NAVY };
+  slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 0.7, fill: { color: '0f2044' } });
+  slide.addText('PROPOSAL PIPELINE', { x: 0.4, y: 0.15, w: 10, h: 0.4, fontSize: 13, bold: true, color: AMBER, charSpacing: 5 });
+  const stages = ['idea','scoping','drafting','submitted','approved'];
+  stages.forEach((s,i) => {
+    const items = state.pipeline.filter(p=>p.stage===s);
+    const x = 0.3 + i * 2.55;
+    slide.addShape(pptx.ShapeType.rect, { x, y: 0.9, w: 2.3, h: 0.35, fill: { color: '142552' } });
+    slide.addText(s.toUpperCase(), { x, y: 0.9, w: 2.3, h: 0.35, fontSize: 9, bold: true, color: AMBER, align: 'center', charSpacing: 3 });
+    items.slice(0,4).forEach((p,j) => {
+      slide.addShape(pptx.ShapeType.rect, { x, y: 1.4 + j*1.2, w: 2.3, h: 1.0, fill: { color: '142552' }, line: { color: '1e3566', width: 0.5 } });
+      slide.addText(p.name.slice(0,35), { x: x+0.1, y: 1.45 + j*1.2, w: 2.1, h: 0.4, fontSize: 8.5, color: WHITE, wrap: true });
+      slide.addText((p.funder||'').slice(0,20), { x: x+0.1, y: 1.75 + j*1.2, w: 2.1, h: 0.25, fontSize: 7.5, color: GRAY });
+      slide.addText(p.deadline ? `⬤ ${FMT(p.deadline)}` : '–', { x: x+0.1, y: 2.05 + j*1.2, w: 2.1, h: 0.25, fontSize: 7.5, color: URGENT(p.deadline) ? 'ef4444' : GRAY });
+    });
+  });
+
+  // Top opportunities slide
+  slide = pptx.addSlide();
+  slide.background = { color: NAVY };
+  slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 0.7, fill: { color: '0f2044' } });
+  slide.addText('TOP FUNDING OPPORTUNITIES', { x: 0.4, y: 0.15, w: 12, h: 0.4, fontSize: 13, bold: true, color: AMBER, charSpacing: 5 });
+  const topOpps = state.opportunities.filter(o=>o.fit==='high'&&o.status!=='no-go').slice(0,5);
+  topOpps.forEach((o,i) => {
+    const y = 0.9 + i * 1.2;
+    slide.addShape(pptx.ShapeType.rect, { x: 0.3, y, w: 12.7, h: 1.05, fill: { color: '142552' }, line: { color: '1e3566', width: 0.5 } });
+    slide.addText('● HIGH FIT', { x: 0.45, y: y+0.08, w: 1.5, h: 0.25, fontSize: 7.5, bold: true, color: '22c55e' });
+    slide.addText(o.name.slice(0,65), { x: 0.45, y: y+0.3, w: 8.5, h: 0.35, fontSize: 10, bold: true, color: WHITE });
+    slide.addText(o.funder, { x: 0.45, y: y+0.65, w: 5, h: 0.25, fontSize: 8.5, color: GRAY });
+    slide.addText(o.deadline ? `Deadline: ${FMT(o.deadline)}` : 'Rolling', { x: 9.5, y: y+0.3, w: 3.3, h: 0.3, fontSize: 9, color: URGENT(o.deadline)?'f97316':GRAY, align:'right' });
+    slide.addText(FMTM(o.maxGrant), { x: 9.5, y: y+0.65, w: 3.3, h: 0.25, fontSize: 10, bold: true, color: AMBER, align:'right' });
+  });
+
+  // Deadlines slide
+  slide = pptx.addSlide();
+  slide.background = { color: NAVY };
+  slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 0.7, fill: { color: '0f2044' } });
+  slide.addText('UPCOMING DEADLINES — NEXT 60 DAYS', { x: 0.4, y: 0.15, w: 12, h: 0.4, fontSize: 13, bold: true, color: AMBER, charSpacing: 5 });
+  const allDeadlines = [...state.pipeline, ...state.opportunities.filter(o=>o.status!=='no-go')]
+    .filter(x => x.deadline && DAYS_UNTIL(x.deadline) !== null && DAYS_UNTIL(x.deadline) <= 60 && DAYS_UNTIL(x.deadline) >= -3)
+    .sort((a,b) => new Date(a.deadline)-new Date(b.deadline));
+  allDeadlines.slice(0,8).forEach((x,i) => {
+    const d = DAYS_UNTIL(x.deadline);
+    const col = i < 3 ? 'ef4444' : i < 6 ? 'f97316' : GRAY;
+    slide.addText(`${FMT(x.deadline)}`, { x: 0.4, y: 0.9+i*0.7, w: 1.8, h: 0.5, fontSize: 11, bold: true, color: col });
+    slide.addText(x.name.slice(0,55), { x: 2.3, y: 0.9+i*0.7, w: 8, h: 0.5, fontSize: 11, color: WHITE });
+    slide.addText(`${d}d`, { x: 10.5, y: 0.9+i*0.7, w: 2.5, h: 0.5, fontSize: 11, bold: true, color: col, align:'right' });
+  });
+
+  // Report text slide (from AI)
+  if (state.reportData) {
+    const slides = state.reportData.split('|||SLIDE|||').filter(Boolean);
+    const titles = ['Executive Summary','Pipeline Status','Priority Opportunities','Upcoming Deadlines','Recommended Actions'];
+    slides.slice(0,2).forEach((content, i) => {
+      slide = pptx.addSlide();
+      slide.background = { color: NAVY };
+      slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 0.7, fill: { color: '0f2044' } });
+      slide.addText((titles[i]||'Report').toUpperCase(), { x: 0.4, y: 0.15, w: 12, h: 0.4, fontSize: 13, bold: true, color: AMBER, charSpacing: 5 });
+      slide.addText(content.slice(0,600), { x: 0.4, y: 0.9, w: 12.5, h: 6, fontSize: 11, color: WHITE, wrap: true, valign: 'top' });
+    });
+  }
+
+  pptx.writeFile({ fileName: `ISD_Germany_WeeklyReport_${TODAY.toISOString().slice(0,10)}.pptx` });
+}
+
+function exportOppCSV() {
+  const cols = ['name','funder','funderType','instrument','theme','fit','deadline','maxGrant','leadPossible','status','notes'];
+  let csv = cols.join(',') + '\n';
+  state.opportunities.forEach(o => csv += cols.map(c => `"${(o[c]||'').toString().replace(/"/g,'""')}"`).join(',') + '\n');
+  const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `ISD_Opportunities_${TODAY.toISOString().slice(0,10)}.csv`; a.click();
+}
+
+function exportPipCSV() {
+  const cols = ['name','funder','stage','deadline','budget','role','theme','callRef','partners'];
+  let csv = cols.join(',') + '\n';
+  state.pipeline.forEach(p => csv += cols.map(c => `"${(p[c]||'').toString().replace(/"/g,'""')}"`).join(',') + '\n');
+  const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `ISD_Pipeline_${TODAY.toISOString().slice(0,10)}.csv`; a.click();
+}
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function stageColor(s) {
+  return {idea:'#5e7a9e',scoping:'#60a5fa',drafting:'#c084fc',submitted:'#f97316',approved:'#22c55e',rejected:'#ef4444'}[s]||'#5e7a9e';
+}
+function stageBadge(s) { return `<span class="badge badge-${s}">${s}</span>`; }
+function statusBadge(s) {
+  const map = {'new':'New','assessing':'Assessing','go':'✓ Go','no-go':'No-Go'};
+  return `<span class="badge badge-${s}">${map[s]||s}</span>`;
+}
+function relBadge(r) { return `<span class="badge badge-${r}">${r}</span>`; }
+function funderTypeLabel(t) {
+  return {
+    'german-ministry': '🇩🇪 German',
+    'eu-institution': '🇪🇺 EU',
+    'multilateral': '🌐 Multilateral',
+    'private': '💼 Private'
+  }[t]||t;
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+// ══════════════════════════════════════════
+//  CHARTS
+// ══════════════════════════════════════════
+const _charts = {};
+
+function destroyChart(id) { if (_charts[id]) { _charts[id].destroy(); delete _charts[id]; } }
+
+function chartDefaults() {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      backgroundColor: '#0c1a30',
+      borderColor: '#1c2f4d',
+      borderWidth: 1,
+      titleColor: '#d8e8f8',
+      bodyColor: '#5e7a9e',
+      padding: 10,
+      titleFont: { family: "'Barlow Condensed', sans-serif", size: 13, weight: '700' },
+      bodyFont: { family: "'Barlow', sans-serif", size: 12 }
+    }}
+  };
+}
+
+function renderCharts() {
+  renderPipelineStageChart();
+  renderOppTypeChart();
+  renderOppStatusChart();
+  renderDeadlineChart();
+  renderPipelineValueChart();
+}
+
+function renderPipelineStageChart() {
+  destroyChart('pip-stage');
+  const stages = ['idea','scoping','drafting','submitted','approved','rejected'];
+  const colors = ['#5e7a9e','#60a5fa','#c084fc','#f97316','#22c55e','#ef4444'];
+  const labels = stages.map(s => s.charAt(0).toUpperCase() + s.slice(1));
+  const data = stages.map(s => state.pipeline.filter(p => p.stage === s).length);
+  const total = state.pipeline.length;
+  document.getElementById('chart-pip-total').textContent = total;
+
+  const ctx = document.getElementById('chart-pip-stage');
+  if (!ctx) return;
+  _charts['pip-stage'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderColor: '#101f38', borderWidth: 3, hoverOffset: 4 }] },
+    options: { ...chartDefaults(), cutout: '68%' }
+  });
+
+  const legend = document.getElementById('chart-pip-legend');
+  if (legend) {
+    legend.innerHTML = stages.map((s, i) => data[i] > 0 ? `<span class="chart-legend-item"><span class="chart-legend-dot" style="background:${colors[i]};"></span>${labels[i]} <strong style="color:var(--text);margin-left:2px;">${data[i]}</strong></span>` : '').join('');
+  }
+}
+
+function renderOppTypeChart() {
+  destroyChart('opp-type');
+  const types = ['german-ministry','eu-institution','multilateral','private'];
+  const typeLabels = ['🇩🇪 German','🇪🇺 EU','🌐 Multilateral','💼 Private'];
+  const colors = ['#60a5fa','#e8a020','#22c55e','#c084fc'];
+  const data = types.map(t => state.opportunities.filter(o => o.funderType === t && o.status !== 'no-go').length);
+  const total = state.opportunities.filter(o => o.status !== 'no-go').length;
+  document.getElementById('chart-opp-total').textContent = total;
+
+  const ctx = document.getElementById('chart-opp-type');
+  if (!ctx) return;
+  _charts['opp-type'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: typeLabels, datasets: [{ data, backgroundColor: colors, borderColor: '#101f38', borderWidth: 3, hoverOffset: 4 }] },
+    options: { ...chartDefaults(), cutout: '68%' }
+  });
+
+  const legend = document.getElementById('chart-opp-legend');
+  if (legend) {
+    legend.innerHTML = typeLabels.map((l, i) => data[i] > 0 ? `<span class="chart-legend-item"><span class="chart-legend-dot" style="background:${colors[i]};"></span>${l} <strong style="color:var(--text);margin-left:2px;">${data[i]}</strong></span>` : '').join('');
+  }
+}
+
+function renderOppStatusChart() {
+  destroyChart('opp-status');
+  const statuses = ['go','assessing','new','no-go'];
+  const statusLabels = ['✓ Go','Assessing','New','No-Go'];
+  const colors = ['#22c55e','#60a5fa','#5e7a9e','#ef4444'];
+  const data = statuses.map(s => state.opportunities.filter(o => o.status === s).length);
+  const active = data[0] + data[1];
+  document.getElementById('chart-status-go').textContent = active;
+
+  const ctx = document.getElementById('chart-opp-status');
+  if (!ctx) return;
+  _charts['opp-status'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: statusLabels, datasets: [{ data, backgroundColor: colors, borderColor: '#101f38', borderWidth: 3, hoverOffset: 4 }] },
+    options: { ...chartDefaults(), cutout: '68%' }
+  });
+
+  const legend = document.getElementById('chart-status-legend');
+  if (legend) {
+    legend.innerHTML = statusLabels.map((l, i) => data[i] > 0 ? `<span class="chart-legend-item"><span class="chart-legend-dot" style="background:${colors[i]};"></span>${l} <strong style="color:var(--text);margin-left:2px;">${data[i]}</strong></span>` : '').join('');
+  }
+}
+
+function renderDeadlineChart() {
+  destroyChart('deadlines');
+  const ctx = document.getElementById('chart-deadlines');
+  if (!ctx) return;
+
+  // Bin deadlines into 2-week buckets over 90 days
+  const buckets = ['0–14d','15–30d','31–60d','61–90d'];
+  const pipBuckets = [0,0,0,0];
+  const oppBuckets = [0,0,0,0];
+
+  const all = [
+    ...state.pipeline.map(p => ({ ...p, _src: 'pip' })),
+    ...state.opportunities.filter(o => o.status !== 'no-go').map(o => ({ ...o, _src: 'opp' }))
+  ];
+
+  all.forEach(item => {
+    const d = DAYS_UNTIL(item.deadline);
+    if (d === null) return;
+    let bi = -1;
+    if (d >= 0 && d <= 14) bi = 0;
+    else if (d <= 30) bi = 1;
+    else if (d <= 60) bi = 2;
+    else if (d <= 90) bi = 3;
+    if (bi === -1) return;
+    if (item._src === 'pip') pipBuckets[bi]++;
+    else oppBuckets[bi]++;
+  });
+
+  _charts['deadlines'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: buckets,
+      datasets: [
+        { label: 'Pipeline Proposals', data: pipBuckets, backgroundColor: 'rgba(192,132,252,0.75)', borderColor: '#c084fc', borderWidth: 1, borderRadius: 4 },
+        { label: 'Opportunities', data: oppBuckets, backgroundColor: 'rgba(96,165,250,0.65)', borderColor: '#60a5fa', borderWidth: 1, borderRadius: 4 }
+      ]
+    },
+    options: {
+      ...chartDefaults(),
+      plugins: {
+        ...chartDefaults().plugins,
+        legend: {
+          display: true,
+          labels: { color: '#5e7a9e', font: { family: "'Barlow', sans-serif", size: 11 }, boxWidth: 10, boxHeight: 10, padding: 12 }
+        }
+      },
+      scales: {
+        x: { stacked: false, grid: { color: 'rgba(28,47,77,0.6)' }, ticks: { color: '#5e7a9e', font: { family: "'Barlow', sans-serif", size: 11 } } },
+        y: { beginAtZero: true, grid: { color: 'rgba(28,47,77,0.6)' }, ticks: { color: '#5e7a9e', stepSize: 1, precision: 0, font: { family: "'JetBrains Mono', monospace", size: 11 } } }
+      }
+    }
+  });
+}
+
+function renderPipelineValueChart() {
+  destroyChart('pip-value');
+  const ctx = document.getElementById('chart-pip-value');
+  if (!ctx) return;
+
+  const stages = ['idea','scoping','drafting','submitted','approved'];
+  const stageLabels = ['Idea','Scoping','Drafting','Submitted','Approved'];
+  const colors = ['rgba(94,122,158,0.7)','rgba(96,165,250,0.75)','rgba(192,132,252,0.75)','rgba(249,115,22,0.75)','rgba(34,197,94,0.75)'];
+  const borderColors = ['#5e7a9e','#60a5fa','#c084fc','#f97316','#22c55e'];
+  const data = stages.map(s =>
+    Math.round(state.pipeline.filter(p => p.stage === s).reduce((sum, p) => sum + (Number(p.budget) || 0), 0) / 1000)
+  );
+
+  _charts['pip-value'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: stageLabels,
+      datasets: [{
+        label: '€k',
+        data,
+        backgroundColor: colors,
+        borderColor: borderColors,
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      ...chartDefaults(),
+      indexAxis: 'y',
+      scales: {
+        x: { beginAtZero: true, grid: { color: 'rgba(28,47,77,0.6)' }, ticks: { color: '#5e7a9e', font: { family: "'JetBrains Mono', monospace", size: 11 }, callback: v => '€' + v + 'k' } },
+        y: { grid: { display: false }, ticks: { color: '#d8e8f8', font: { family: "'Barlow Condensed', sans-serif", size: 12, weight: '700' } } }
+      }
+    }
+  });
+}
+
+async function forceImportPipeline() {
+  if (!confirm('This will replace your stored pipeline with the 38 projects imported from the official ISD Germany Pipeline spreadsheet. Continue?')) return;
+  state.pipeline = DEFAULT_PIPELINE.map(p => ({ ...p, id: genId() }));
+  await savePipeline();
+  renderPipeline(); renderOverview();
+  alert('✓ Pipeline updated with ' + state.pipeline.length + ' projects from official ISD Germany master list.');
+}
+
+loadAll();
+</script>
+</body>
+</html>
